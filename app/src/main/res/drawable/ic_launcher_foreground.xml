@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- Marco de madera de una pequena pizarra, como logotipo grafico de ClaseSmart -->
+    <path android:fillColor="#9C6B41" android:pathData="M24,30 h60 v46 h-60 z"/>
+    <path android:fillColor="#2E5339" android:pathData="M30,36 h48 v34 h-48 z"/>
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FDFDF6"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:pathData="M38,58 C44,48 50,48 54,54 C58,60 64,60 70,52"/>
+    <path android:fillColor="#F4D35E" android:pathData="M46,84 h16 v6 h-16 z"/>
+</vector>

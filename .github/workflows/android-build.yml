@@ -1,0 +1,101 @@
+name: Android CI — Build APK
+
+# Se dispara al hacer push (o pull request) a main/master, y tambien se
+# puede lanzar a mano desde la pestaña "Actions" de GitHub (workflow_dispatch).
+#
+# IMPORTANTE: este repositorio NO incluye gradle/wrapper/gradle-wrapper.jar
+# a proposito (ver README.md y docs/BUILD_REPORT.md: descargar un .jar
+# compilado desde un origen no verificable es un riesgo de supply-chain).
+# Este workflow lo genera el mismo, en el runner de GitHub, usando una
+# instalacion oficial de Gradle 8.7 provista por gradle/actions/setup-gradle
+# (que descarga Gradle directamente de services.gradle.org, la fuente
+# oficial) — nunca desde un jar de terceros.
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Compilar, testear y empaquetar el APK de depuracion
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # Provisiona una instalacion de Gradle real y cachea el Gradle User Home.
+      # Los runners ubuntu-latest de GitHub ya incluyen el Android SDK
+      # (platform-tools, build-tools, y las plataformas mas recientes),
+      # asi que no hace falta un setup-android adicional para compileSdk 34.
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Generar gradle-wrapper.jar (oficial, vía services.gradle.org)
+        run: gradle wrapper --gradle-version 8.7 --distribution-type bin
+
+      - name: Dar permisos de ejecucion a gradlew
+        run: chmod +x ./gradlew
+
+      - name: Limpiar
+        run: ./gradlew clean --stacktrace
+
+      - name: Ejecutar tests unitarios de dominio (mínimo 40, hay 48)
+        run: ./gradlew testDebugUnitTest --stacktrace
+
+      - name: Ejecutar lint
+        run: ./gradlew lintDebug --stacktrace
+
+      - name: Compilar el APK de depuracion
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Calcular SHA-256 del APK generado
+        if: success()
+        run: |
+          echo "### APK generado" >> "$GITHUB_STEP_SUMMARY"
+          for f in app/build/outputs/apk/debug/*.apk; do
+            echo "- \`$f\`: \`$(sha256sum "$f" | cut -d' ' -f1)\`" >> "$GITHUB_STEP_SUMMARY"
+          done
+
+      - name: Subir el APK como artefacto descargable
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ClaseSmart-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Subir informe de tests unitarios
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-tests-unitarios
+          path: |
+            app/build/reports/tests/testDebugUnitTest/**
+            app/build/test-results/testDebugUnitTest/**
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Subir informe de lint
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-lint
+          path: app/build/reports/lint-results-debug.html
+          if-no-files-found: warn
+          retention-days: 14

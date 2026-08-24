@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- El theming real vive en ui/theme (Compose). Este estilo base solo
+         evita el flash blanco durante el arranque en frio. -->
+    <style name="Theme.ClaseSmart" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/aula_fondo_arranque</item>
+        <item name="android:statusBarColor">@color/aula_pizarra_verde</item>
+    </style>
+</resources>
