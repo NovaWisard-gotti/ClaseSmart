@@ -1,7 +1,7 @@
 package com.educalab.clasesmart.ui.scene
 
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -41,7 +41,8 @@ fun ClassroomObjectSlot(
     content: @Composable () -> Unit
 ) {
     val infinite = rememberInfiniteTransition(label = "idle")
-    val bobbing by infinite.animateFloatAsState(
+    val bobbing by infinite.animateFloat(
+        initialValue = 0f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(tween(1400), repeatMode = RepeatMode.Reverse),
         label = "bobbing"
