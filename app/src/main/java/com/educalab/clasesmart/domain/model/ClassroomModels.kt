@@ -19,7 +19,8 @@ data class ClassroomObject(
     val zoneX: Float,
     val zoneY: Float,
     val state: ModuleState,
-    val unlockLevel: Int
+    val unlockLevel: Int,
+    val sizeScale: Float = 1f
 )
 
 data class ClassroomSnapshot(

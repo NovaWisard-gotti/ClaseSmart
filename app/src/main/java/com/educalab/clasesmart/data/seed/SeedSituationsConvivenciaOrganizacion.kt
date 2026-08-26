@@ -24,7 +24,15 @@ object SeedSituationsConvivenciaOrganizacion {
         ClassroomSituationEntity("sit_org_2", "El grupo no sabe por donde empezar", "El equipo de ciencias mira el material sin decidir el primer paso.", "ORGANIZACION", "10-12", "leo,vera"),
         ClassroomSituationEntity("sit_org_3", "Demasiadas cosas sobre la mesa", "La mesa de Sam tiene materiales de tres actividades distintas mezclados.", "ORGANIZACION", "8-9", "sam"),
         ClassroomSituationEntity("sit_org_4", "Nadie recogio la pizarra", "La pizarra sigue llena de la clase anterior y hace falta para hoy.", "ORGANIZACION", "8-9", "alex,dani"),
-        ClassroomSituationEntity("sit_org_5", "El plan cambio a mitad de actividad", "A mitad del mural, el equipo decide cambiar el diseno sin avisar a todos.", "ORGANIZACION", "10-12", "noa,cata,bruno")
+        ClassroomSituationEntity("sit_org_5", "El plan cambio a mitad de actividad", "A mitad del mural, el equipo decide cambiar el diseno sin avisar a todos.", "ORGANIZACION", "10-12", "noa,cata,bruno"),
+
+        ClassroomSituationEntity("sit_conv_6", "Se burlan de un error", "Teo se equivoco leyendo en voz alta y algunos companeros se rieron.", "CONVIVENCIA", "8-9", "teo,dani"),
+        ClassroomSituationEntity("sit_conv_7", "Dos amigos se pelean por un juego", "En el recreo, Sam y Alex discuten porque los dos quieren jugar al mismo juego de mesa.", "CONVIVENCIA", "8-9", "sam,alex"),
+        ClassroomSituationEntity("sit_conv_8", "Un companero nuevo no conoce a nadie", "Hoy llego Iris, una companera nueva, y esta sola en el recreo.", "CONVIVENCIA", "8-9", "iris,mia"),
+
+        ClassroomSituationEntity("sit_org_6", "El rincon de lectura quedo revuelto", "Los libros de la biblioteca del aula quedaron fuera de sus estantes despues de la clase de lectura.", "ORGANIZACION", "8-9", "sam,vera"),
+        ClassroomSituationEntity("sit_org_7", "Las mochilas bloquean el paso", "Varias mochilas quedaron tiradas en medio del pasillo del aula.", "ORGANIZACION", "8-9", "leo,cata"),
+        ClassroomSituationEntity("sit_org_8", "El calendario del aula esta desactualizado", "El calendario todavia marca la semana pasada y hay actividades nuevas por anotar.", "ORGANIZACION", "10-12", "noa,teo")
     )
 
     val options = listOf(
@@ -67,7 +75,31 @@ object SeedSituationsConvivenciaOrganizacion {
         // sit_org_5
         SituationOptionEntity("opt_org5_a", "sit_org_5", "Reunir al equipo un minuto para contar el cambio", 2),
         SituationOptionEntity("opt_org5_b", "sit_org_5", "Avisar solo a quien esta al lado", 1),
-        SituationOptionEntity("opt_org5_c", "sit_org_5", "Seguir cada uno con el plan que tenia antes", 0)
+        SituationOptionEntity("opt_org5_c", "sit_org_5", "Seguir cada uno con el plan que tenia antes", 0),
+        // sit_conv_6
+        SituationOptionEntity("opt_conv6_a", "sit_conv_6", "Decirle a Teo que siga, que todos se equivocan alguna vez", 2),
+        SituationOptionEntity("opt_conv6_b", "sit_conv_6", "Quedarse callado sin decir nada", 1),
+        SituationOptionEntity("opt_conv6_c", "sit_conv_6", "Reirse tambien con el resto", 0),
+        // sit_conv_7
+        SituationOptionEntity("opt_conv7_a", "sit_conv_7", "Proponer turnos cortos para los dos", 2),
+        SituationOptionEntity("opt_conv7_b", "sit_conv_7", "Dejar que decida quien llego primero", 1),
+        SituationOptionEntity("opt_conv7_c", "sit_conv_7", "Guardar el juego para que ninguno lo use", 0),
+        // sit_conv_8
+        SituationOptionEntity("opt_conv8_a", "sit_conv_8", "Invitarla a unirse al grupo de juego", 2),
+        SituationOptionEntity("opt_conv8_b", "sit_conv_8", "Saludarla, pero seguir jugando sin invitarla", 1),
+        SituationOptionEntity("opt_conv8_c", "sit_conv_8", "No decirle nada y seguir como si no estuviera", 0),
+        // sit_org_6
+        SituationOptionEntity("opt_org6_a", "sit_org_6", "Ordenarlos por tema antes de irse", 2),
+        SituationOptionEntity("opt_org6_b", "sit_org_6", "Apilarlos rapido en cualquier estante", 1),
+        SituationOptionEntity("opt_org6_c", "sit_org_6", "Dejarlos tirados para la proxima clase", 0),
+        // sit_org_7
+        SituationOptionEntity("opt_org7_a", "sit_org_7", "Colgarlas todas en el perchero", 2),
+        SituationOptionEntity("opt_org7_b", "sit_org_7", "Empujarlas a un lado sin ordenarlas", 1),
+        SituationOptionEntity("opt_org7_c", "sit_org_7", "Dejarlas donde estan", 0),
+        // sit_org_8
+        SituationOptionEntity("opt_org8_a", "sit_org_8", "Actualizarlo entre dos antes de empezar la clase", 2),
+        SituationOptionEntity("opt_org8_b", "sit_org_8", "Actualizarlo solo a medias, sin todas las fechas", 1),
+        SituationOptionEntity("opt_org8_c", "sit_org_8", "Dejarlo como esta", 0)
     )
 
     val outcomes = listOf(
@@ -109,6 +141,30 @@ object SeedSituationsConvivenciaOrganizacion {
 
         SituationOutcomeEntity("out_org5_a", "opt_org5_a", "Todo el equipo siguio el nuevo plan a la vez, sin confusiones.", 15),
         SituationOutcomeEntity("out_org5_b", "opt_org5_b", "Una parte del equipo se entero tarde del cambio.", 8),
-        SituationOutcomeEntity("out_org5_c", "opt_org5_c", "El mural quedo con dos diseños distintos mezclados.", 2)
+        SituationOutcomeEntity("out_org5_c", "opt_org5_c", "El mural quedo con dos diseños distintos mezclados.", 2),
+
+        SituationOutcomeEntity("out_conv6_a", "opt_conv6_a", "Teo se animo a seguir leyendo sin sentirse mal.", 15),
+        SituationOutcomeEntity("out_conv6_b", "opt_conv6_b", "Teo termino de leer, pero se quedo con la sensacion incomoda.", 8),
+        SituationOutcomeEntity("out_conv6_c", "opt_conv6_c", "Teo no quiso volver a leer en voz alta esa semana.", 2),
+
+        SituationOutcomeEntity("out_conv7_a", "opt_conv7_a", "Los dos pudieron jugar y terminaron reconciliados.", 15),
+        SituationOutcomeEntity("out_conv7_b", "opt_conv7_b", "Uno jugo y el otro espero su turno algo molesto.", 8),
+        SituationOutcomeEntity("out_conv7_c", "opt_conv7_c", "Ninguno de los dos pudo jugar y quedaron enojados.", 2),
+
+        SituationOutcomeEntity("out_conv8_a", "opt_conv8_a", "Iris se sintio bienvenida y empezo a hacer nuevos amigos.", 15),
+        SituationOutcomeEntity("out_conv8_b", "opt_conv8_b", "Iris se sintio un poco menos sola, pero siguio observando desde lejos.", 8),
+        SituationOutcomeEntity("out_conv8_c", "opt_conv8_c", "Iris paso todo el recreo sola en su primer dia.", 2),
+
+        SituationOutcomeEntity("out_org6_a", "opt_org6_a", "El rincon quedo listo y facil de usar para todos.", 15),
+        SituationOutcomeEntity("out_org6_b", "opt_org6_b", "Los libros quedaron guardados, pero costara encontrarlos despues.", 8),
+        SituationOutcomeEntity("out_org6_c", "opt_org6_c", "El rincon de lectura quedo hecho un desastre.", 2),
+
+        SituationOutcomeEntity("out_org7_a", "opt_org7_a", "El pasillo quedo libre y seguro para caminar.", 15),
+        SituationOutcomeEntity("out_org7_b", "opt_org7_b", "El paso quedo algo mas libre, pero seguia siendo dificil caminar.", 8),
+        SituationOutcomeEntity("out_org7_c", "opt_org7_c", "Alguien podria tropezar con las mochilas en cualquier momento.", 2),
+
+        SituationOutcomeEntity("out_org8_a", "opt_org8_a", "Todos supieron que actividades tocaban esta semana.", 15),
+        SituationOutcomeEntity("out_org8_b", "opt_org8_b", "Algunas fechas quedaron claras, pero otras seguian confusas.", 8),
+        SituationOutcomeEntity("out_org8_c", "opt_org8_c", "Varios companeros se olvidaron de actividades importantes.", 2)
     )
 }

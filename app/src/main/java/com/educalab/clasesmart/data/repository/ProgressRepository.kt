@@ -15,6 +15,9 @@ class ProgressRepository(
 ) {
     fun observeXp(): Flow<Int> = progressDao.observeProgress().map { it?.totalXp ?: 0 }
 
+    suspend fun countInteractionsSince(kind: String, sinceEpochMs: Long): Int =
+        historyDao.countByKindSince(kind, sinceEpochMs)
+
     /** Registra la interaccion real y aplica el motor de progreso: nunca se otorga XP "de la nada". */
     suspend fun recordInteractionAndAwardXp(
         kind: String,

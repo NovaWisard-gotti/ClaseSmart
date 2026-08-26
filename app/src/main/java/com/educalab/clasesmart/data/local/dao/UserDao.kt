@@ -50,4 +50,7 @@ interface InteractionHistoryDao {
 
     @Query("SELECT COUNT(*) FROM interaction_history WHERE kind = :kind AND wasSuccessful = 1")
     suspend fun countSuccessfulByKind(kind: String): Int
+
+    @Query("SELECT COUNT(*) FROM interaction_history WHERE kind = :kind AND timestampEpochMs >= :sinceEpochMs")
+    suspend fun countByKindSince(kind: String, sinceEpochMs: Long): Int
 }

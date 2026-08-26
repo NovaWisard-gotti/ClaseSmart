@@ -7,6 +7,7 @@ import com.educalab.clasesmart.data.repository.BadgeRepository
 import com.educalab.clasesmart.data.repository.ProgressRepository
 import com.educalab.clasesmart.data.repository.SituationRepository
 import com.educalab.clasesmart.domain.logic.BadgeEngine
+import com.educalab.clasesmart.domain.logic.DailySituationsEngine
 import com.educalab.clasesmart.domain.logic.SituationResolutionEngine
 import com.educalab.clasesmart.domain.model.ClassroomSituation
 import com.educalab.clasesmart.domain.model.SituationCategory
@@ -17,42 +18,64 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 data class SituacionesUiState(
-    val category: SituationCategory = SituationCategory.CONVIVENCIA,
     val situations: List<ClassroomSituation> = emptyList(),
     val currentIndex: Int = 0,
     val lastOutcome: SituationOutcome? = null,
-    val resolvedCount: Int = 0,
+    val resolvedToday: Int = 0,
+    val totalToday: Int = 0,
+    val isDayComplete: Boolean = false,
     val isLoading: Boolean = true
 ) {
     val current: ClassroomSituation? get() = situations.getOrNull(currentIndex)
 }
 
+/**
+ * Muestra el grupo de situaciones del dia (ver DailySituationsEngine): un
+ * mismo conjunto se repite dentro del mismo dia si el usuario reabre la
+ * pantalla (retoma en la que dejo pendiente), pero cambia automaticamente
+ * al dia siguiente y no repite ninguna situacion antes de varios dias.
+ */
 class SituacionesViewModel(
-    private val category: SituationCategory,
     private val situationRepository: SituationRepository,
     private val progressRepository: ProgressRepository,
     private val badgeRepository: BadgeRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(SituacionesUiState(category = category))
+    private val _uiState = MutableStateFlow(SituacionesUiState())
     val uiState: StateFlow<SituacionesUiState> = _uiState.asStateFlow()
 
     private var highQualityCount = 0
+    private var convivenciaResolvedCount = 0
 
     init {
         viewModelScope.launch {
-            val loaded = situationRepository.getByCategory(category)
-            _uiState.value = _uiState.value.copy(situations = loaded, isLoading = false)
+            val all = situationRepository.getAll()
+            val dayIndex = DailySituationsEngine.currentDayIndex()
+            val today = DailySituationsEngine.situationsForDay(all, dayIndex)
+            val resolvedToday = if (today.isEmpty()) 0 else progressRepository
+                .countInteractionsSince("SITUATION_RESOLVED", DailySituationsEngine.startOfDayEpochMs())
+                .coerceIn(0, today.size)
+
+            _uiState.value = SituacionesUiState(
+                situations = today,
+                currentIndex = resolvedToday.coerceAtMost((today.size - 1).coerceAtLeast(0)),
+                resolvedToday = resolvedToday,
+                totalToday = today.size,
+                isDayComplete = today.isEmpty() || resolvedToday >= today.size,
+                isLoading = false
+            )
         }
     }
 
     fun resolve(optionId: String) {
         val state = _uiState.value
         val situation = state.current ?: return
+        if (state.lastOutcome != null) return
         viewModelScope.launch {
             val outcomes = situationRepository.getOutcomeMap(situation.situationId)
             val outcome = SituationResolutionEngine.resolve(situation, optionId, outcomes)
             if (outcome.qualityLevel == 2) highQualityCount++
+            if (situation.category == SituationCategory.CONVIVENCIA && outcome.qualityLevel >= 1) convivenciaResolvedCount++
 
             val now = System.currentTimeMillis()
             progressRepository.recordInteractionAndAwardXp(
@@ -64,31 +87,36 @@ class SituacionesViewModel(
             )
 
             val newlyEarned = BadgeEngine.evaluateNewlyEarned(
-                BadgeEngine.UserStats(situationsHighQuality = highQualityCount, convivenciaSituationsResolved = if (category == SituationCategory.CONVIVENCIA) state.resolvedCount + 1 else 0),
+                BadgeEngine.UserStats(situationsHighQuality = highQualityCount, convivenciaSituationsResolved = convivenciaResolvedCount),
                 emptySet()
             )
             if (newlyEarned.isNotEmpty()) badgeRepository.awardBadges(newlyEarned, now)
 
-            _uiState.value = state.copy(lastOutcome = outcome, resolvedCount = state.resolvedCount + 1)
+            val resolvedToday = (state.resolvedToday + 1).coerceAtMost(state.totalToday)
+            _uiState.value = state.copy(
+                lastOutcome = outcome,
+                resolvedToday = resolvedToday,
+                isDayComplete = resolvedToday >= state.totalToday
+            )
         }
     }
 
     fun nextSituation() {
         val state = _uiState.value
+        if (state.currentIndex >= state.situations.lastIndex) return
         _uiState.value = state.copy(
-            currentIndex = (state.currentIndex + 1).coerceAtMost(state.situations.lastIndex.coerceAtLeast(0)),
+            currentIndex = state.currentIndex + 1,
             lastOutcome = null
         )
     }
 
     class Factory(
-        private val category: SituationCategory,
         private val situationRepository: SituationRepository,
         private val progressRepository: ProgressRepository,
         private val badgeRepository: BadgeRepository
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T =
-            SituacionesViewModel(category, situationRepository, progressRepository, badgeRepository) as T
+            SituacionesViewModel(situationRepository, progressRepository, badgeRepository) as T
     }
 }

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.educalab.clasesmart.data.local.dao.ClassActivityDao
 import com.educalab.clasesmart.data.local.dao.TimeBlockDao
+import com.educalab.clasesmart.data.local.entity.ClassActivityEntity
 import com.educalab.clasesmart.data.repository.BadgeRepository
 import com.educalab.clasesmart.data.repository.ProgressRepository
 import com.educalab.clasesmart.data.repository.ScheduleRepository
@@ -15,6 +16,7 @@ import com.educalab.clasesmart.domain.logic.OrganizationEngine
 import com.educalab.clasesmart.domain.model.PlannableActivity
 import com.educalab.clasesmart.domain.model.ScheduleAssignment
 import com.educalab.clasesmart.domain.model.ScheduleEvaluation
+import com.educalab.clasesmart.domain.model.Subject
 import com.educalab.clasesmart.domain.model.TimeSlot
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,6 +30,7 @@ data class OrganizaDiaUiState(
     val assignments: Map<String, PlannableActivity> = emptyMap(), // timeBlockId -> activity
     val evaluation: ScheduleEvaluation? = null,
     val consequenceText: String = "",
+    val confirmationMessage: String? = null,
     val isLoading: Boolean = true
 )
 
@@ -84,7 +87,12 @@ class OrganizaDiaViewModel(
     }
 
     fun confirmPlan() {
-        val evaluation = _uiState.value.evaluation ?: return
+        val state = _uiState.value
+        val evaluation = state.evaluation
+        if (evaluation == null || evaluation.assignments.isEmpty()) {
+            _uiState.value = state.copy(consequenceText = "Arrastra al menos una actividad a un bloque de tiempo antes de confirmar.")
+            return
+        }
         viewModelScope.launch {
             val now = System.currentTimeMillis()
             val xp = if (evaluation.isPlanValido) 20 else 5
@@ -96,6 +104,33 @@ class OrganizaDiaViewModel(
             scheduleRepository.saveAssignments("hoy", evaluation.assignments)
             val newlyEarned = BadgeEngine.evaluateNewlyEarned(BadgeEngine.UserStats(schedulesWithoutIssues = successfulPlansCount), emptySet())
             if (newlyEarned.isNotEmpty()) badgeRepository.awardBadges(newlyEarned, now)
+
+            val message = if (evaluation.isPlanValido) "¡Horario guardado! +$xp XP" else "Horario guardado, aunque con algunos problemas. +$xp XP"
+            _uiState.value = _uiState.value.copy(confirmationMessage = message)
+        }
+    }
+
+    fun consumeConfirmationMessage() {
+        _uiState.value = _uiState.value.copy(confirmationMessage = null)
+    }
+
+    fun addCustomActivity(title: String, durationMinutes: Int) {
+        val cleanTitle = title.trim()
+        if (cleanTitle.isEmpty() || durationMinutes <= 0) return
+        viewModelScope.launch {
+            val id = "custom_${System.currentTimeMillis()}"
+            classActivityDao.insertAll(
+                listOf(
+                    ClassActivityEntity(
+                        activityId = id,
+                        title = cleanTitle,
+                        subject = Subject.TRABAJO_GRUPAL.name,
+                        durationMinutes = durationMinutes
+                    )
+                )
+            )
+            val created = classActivityDao.getById(id)?.toDomain() ?: return@launch
+            _uiState.value = _uiState.value.copy(pendingActivities = _uiState.value.pendingActivities + created)
         }
     }
 

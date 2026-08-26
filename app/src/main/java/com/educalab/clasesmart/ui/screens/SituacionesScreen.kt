@@ -6,7 +6,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -27,6 +29,10 @@ import com.educalab.clasesmart.ui.viewmodel.SituacionesViewModel
  * NO se presenta como un cuestionario de opcion multiple con
  * Correcto/Incorrecto: cada opcion es una accion dentro de la escena y
  * la consecuencia se explica siempre en una frase educativa.
+ *
+ * Cada dia se habilita un grupo nuevo de situaciones (DailySituationsEngine);
+ * al terminarlas todas se muestra un mensaje de cierre y hay que volver al
+ * dia siguiente para desbloquear el siguiente grupo.
  */
 @Composable
 fun SituacionesScreen(viewModel: SituacionesViewModel, onExit: () -> Unit) {
@@ -37,6 +43,7 @@ fun SituacionesScreen(viewModel: SituacionesViewModel, onExit: () -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .background(C.ParedCrema)
+            .verticalScroll(rememberScrollState())
             .padding(20.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -50,8 +57,19 @@ fun SituacionesScreen(viewModel: SituacionesViewModel, onExit: () -> Unit) {
             CircularProgressIndicator(color = C.PizarraVerde)
             return
         }
+
+        if (state.totalToday > 0) {
+            DailyProgressBar(resolved = state.resolvedToday, total = state.totalToday)
+            Spacer(Modifier.height(16.dp))
+        }
+
+        if (state.isDayComplete && state.lastOutcome == null) {
+            DayCompleteCard(onExit)
+            return
+        }
+
         if (situation == null) {
-            Text("Ya resolviste todas las situaciones de esta categoria por ahora.", color = C.TextoSuave)
+            Text("Por ahora no hay situaciones disponibles. Vuelve mas tarde.", color = C.TextoSuave)
             return
         }
 
@@ -91,6 +109,7 @@ fun SituacionesScreen(viewModel: SituacionesViewModel, onExit: () -> Unit) {
             enter = fadeIn(tween(300)) + slideInVertically(tween(300)) { it / 3 }
         ) {
             state.lastOutcome?.let { outcome ->
+                val isLastOfToday = state.resolvedToday >= state.totalToday
                 Spacer(Modifier.height(16.dp))
                 Surface(
                     shape = RoundedCornerShape(16.dp),
@@ -104,9 +123,66 @@ fun SituacionesScreen(viewModel: SituacionesViewModel, onExit: () -> Unit) {
                         Spacer(Modifier.height(10.dp))
                         Text("+${outcome.xpAwarded} XP", color = C.TextoOscuro, fontWeight = FontWeight.Bold)
                         Spacer(Modifier.height(10.dp))
-                        TextButton(onClick = { viewModel.nextSituation() }) { Text("Siguiente situacion") }
+                        if (isLastOfToday) {
+                            Text(
+                                "¡Eso es todo por hoy! Vuelve mañana para nuevas situaciones.",
+                                color = C.TextoOscuro, fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.padding(bottom = 8.dp)
+                            )
+                            Button(
+                                onClick = onExit,
+                                colors = ButtonDefaults.buttonColors(containerColor = C.PizarraVerde)
+                            ) { Text("Volver al aula", color = C.TizaBlanca) }
+                        } else {
+                            TextButton(onClick = { viewModel.nextSituation() }) { Text("Siguiente situacion") }
+                        }
                     }
                 }
+            }
+        }
+        Spacer(Modifier.height(20.dp))
+    }
+}
+
+@Composable
+private fun DailyProgressBar(resolved: Int, total: Int) {
+    Column {
+        Text(
+            "Situaciones de hoy: $resolved / $total",
+            style = MaterialTheme.typography.labelLarge,
+            color = C.TextoSuave,
+            fontWeight = FontWeight.SemiBold
+        )
+        Spacer(Modifier.height(6.dp))
+        LinearProgressIndicator(
+            progress = if (total == 0) 0f else resolved.toFloat() / total.toFloat(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(10.dp)
+                .clip(RoundedCornerShape(50)),
+            color = C.AcentoVerdeManzana,
+            trackColor = C.ParedCremaSombra
+        )
+    }
+}
+
+@Composable
+private fun DayCompleteCard(onExit: () -> Unit) {
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = C.PapelBeige,
+        tonalElevation = 3.dp,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            CharacterSprite(SkinA, C.MarcoMaderaOscuro, C.AcentoVerdeManzana, Expression.ORGULLOSO, sizeDp = 80)
+            Spacer(Modifier.height(12.dp))
+            Text("¡Ya resolviste todas las situaciones de hoy!", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = C.TextoOscuro)
+            Spacer(Modifier.height(6.dp))
+            Text("Vuelve mañana para desbloquear un grupo nuevo de situaciones.", color = C.TextoSuave, style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.height(16.dp))
+            Button(onClick = onExit, colors = ButtonDefaults.buttonColors(containerColor = C.PizarraVerde)) {
+                Text("Volver al aula", color = C.TizaBlanca)
             }
         }
     }

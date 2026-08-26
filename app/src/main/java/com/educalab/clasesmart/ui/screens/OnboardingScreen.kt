@@ -1,15 +1,20 @@
 package com.educalab.clasesmart.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -98,25 +103,66 @@ private fun OnboardingAvatarPicker(selected: String, onSelect: (String) -> Unit,
     Column {
         Text("Elige tu avatar y un alias (no tu nombre real)", style = MaterialTheme.typography.titleLarge, color = C.TizaBlanca, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(16.dp))
-        LazyVerticalGrid(columns = GridCells.Fixed(4), modifier = Modifier.height(200.dp), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(AVAILABLE_AVATARS) { avatarId ->
-                val idx = AVAILABLE_AVATARS.indexOf(avatarId)
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = if (selected == avatarId) C.TizaAmarilla else C.MarcoMadera,
-                    onClick = { onSelect(avatarId) }
-                ) {
-                    Box(Modifier.padding(4.dp), contentAlignment = Alignment.Center) {
-                        CharacterSprite(avatarSkin(idx), avatarHair(idx), avatarShirt(idx), Expression.FELIZ, sizeDp = 56)
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(4),
+            modifier = Modifier.height(260.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            itemsIndexed(AVAILABLE_AVATARS) { idx, avatarId ->
+                val isSelected = selected == avatarId
+                Box {
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = if (isSelected) C.TizaAmarilla else C.MarcoMadera,
+                        border = if (isSelected) BorderStroke(2.dp, C.TizaBlanca) else null,
+                        onClick = { onSelect(avatarId) },
+                        modifier = Modifier.aspectRatio(1f)
+                    ) {
+                        Box(Modifier.fillMaxSize().padding(6.dp), contentAlignment = Alignment.Center) {
+                            Box(
+                                Modifier
+                                    .fillMaxSize()
+                                    .clip(CircleShape)
+                                    .background(avatarBackdrop(idx)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CharacterSprite(avatarSkin(idx), avatarHair(idx), avatarShirt(idx), Expression.FELIZ, sizeDp = 48)
+                            }
+                        }
+                    }
+                    if (isSelected) {
+                        Box(
+                            Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(2.dp)
+                                .size(18.dp)
+                                .clip(CircleShape)
+                                .background(C.EstadoCompletado),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Filled.Check, contentDescription = "Seleccionado", tint = Color.White, modifier = Modifier.size(12.dp))
+                        }
                     }
                 }
             }
         }
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(20.dp))
         OutlinedTextField(
             value = alias, onValueChange = onAlias,
-            label = { Text("Tu alias", color = C.ParedCrema) },
-            colors = OutlinedTextFieldDefaults.colors(focusedTextColor = C.TizaBlanca, unfocusedTextColor = C.TizaBlanca),
+            label = { Text("Tu alias") },
+            singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = C.TizaBlanca,
+                unfocusedTextColor = C.TizaBlanca,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent,
+                focusedBorderColor = C.TizaAmarilla,
+                unfocusedBorderColor = C.TizaBlanca.copy(alpha = 0.6f),
+                cursorColor = C.TizaAmarilla,
+                focusedLabelColor = C.TizaAmarilla,
+                unfocusedLabelColor = C.ParedCrema
+            ),
             modifier = Modifier.fillMaxWidth()
         )
     }
@@ -138,3 +184,4 @@ private fun OnboardingPrivacy() {
 private fun avatarSkin(i: Int) = listOf(Color(0xFFE8B98A), Color(0xFFC98A5B), Color(0xFFF2D0A9), Color(0xFF8D5B3E))[i % 4]
 private fun avatarHair(i: Int) = listOf(C.TextoOscuro, C.MarcoMaderaOscuro, Color(0xFFD9A441), Color(0xFF6B4A2F))[i % 4]
 private fun avatarShirt(i: Int) = listOf(C.AcentoAzulCielo, C.AcentoNaranja, C.AcentoVerdeManzana, C.AcentoMorado, C.TizaRosa, C.TizaAmarilla)[i % 6]
+private fun avatarBackdrop(i: Int) = listOf(C.PapelNota, C.PapelNotaAzul, C.PapelNotaRosa, C.PapelBeige)[i % 4]

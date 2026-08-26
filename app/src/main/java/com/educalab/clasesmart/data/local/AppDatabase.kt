@@ -47,7 +47,7 @@ import kotlinx.coroutines.launch
         BadgeEntity::class,
         UserBadgeEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -93,7 +93,7 @@ abstract class AppDatabase : RoomDatabase() {
                 context.applicationContext,
                 AppDatabase::class.java,
                 "clasesmart.db"
-            ).addCallback(object : Callback() {
+            ).fallbackToDestructiveMigration().addCallback(object : Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)
                     // Sembrado inicial: se ejecuta UNA sola vez, en la creacion

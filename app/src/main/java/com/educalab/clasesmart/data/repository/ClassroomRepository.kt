@@ -49,5 +49,6 @@ private fun ClassroomObjectEntity.toDomain(): ClassroomObject = ClassroomObject(
     zoneX = zoneX,
     zoneY = zoneY,
     state = ModuleState.valueOf(state),
-    unlockLevel = unlockLevel
+    unlockLevel = unlockLevel,
+    sizeScale = sizeScale
 )

@@ -1,18 +1,31 @@
 package com.educalab.clasesmart.ui.scene
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.educalab.clasesmart.domain.model.ClassroomObject
 import com.educalab.clasesmart.domain.model.ClassroomObjectType
 import com.educalab.clasesmart.domain.model.Expression
 import com.educalab.clasesmart.ui.theme.ClaseSmartColors as C
+
+/** Altura virtual del lienzo del aula: es mas alta que la pantalla a proposito
+ * para poder repartir los 30 objetos sin que se superpongan; se recorre
+ * haciendo scroll vertical. */
+private val SCENE_HEIGHT = 2200.dp
 
 /**
  * EL AULA. Pantalla principal de ClaseSmart (Regla "Home - regla especial":
@@ -27,12 +40,43 @@ fun ClassroomScene(
     totalXp: Int,
     onObjectTap: (ClassroomObject) -> Unit,
     onBlockedTap: (ClassroomObject) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showGuide: Boolean = false,
+    onDismissGuide: () -> Unit = {},
+    onOpenGuide: () -> Unit = {}
 ) {
     Box(modifier = modifier.fillMaxSize()) {
-        ClassroomBackground(modifier = Modifier.fillMaxSize())
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+        ) {
+            BoxWithConstraints(modifier = Modifier.fillMaxWidth().height(SCENE_HEIGHT)) {
+                ClassroomBackground(modifier = Modifier.matchParentSize())
 
-        // Personajes idle en la escena, dando sensacion de vida al espacio.
+                objects.forEach { obj ->
+                    val sizeDp = objectSizeFor(obj.type) * obj.sizeScale
+                    Box(
+                        modifier = Modifier
+                            .offset(
+                                x = (maxWidth.value * obj.zoneX - sizeDp.value / 2).dp,
+                                y = (maxHeight.value * obj.zoneY - sizeDp.value / 2).dp
+                            )
+                    ) {
+                        ClassroomObjectSlot(
+                            state = obj.state,
+                            onClick = {
+                                if (obj.state.name == "BLOQUEADO") onBlockedTap(obj) else onObjectTap(obj)
+                            }
+                        ) {
+                            ObjectVisualFor(obj.type, sizeDp)
+                        }
+                    }
+                }
+            }
+        }
+
+        // Personajes idle, siempre visibles al pie de la pantalla (no se mueven con el scroll).
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -43,45 +87,94 @@ fun ClassroomScene(
             CharacterSprite(SKIN_TONE_2, C.TextoOscuro, C.AcentoNaranja, Expression.COLABORANDO, sizeDp = 64)
         }
 
-        objects.forEach { obj ->
-            BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                val sizeDp = objectSizeFor(obj.type)
-                Box(
-                    modifier = Modifier
-                        .offset(
-                            x = (maxWidth.value * obj.zoneX - sizeDp.value / 2).dp,
-                            y = (maxHeight.value * obj.zoneY - sizeDp.value / 2).dp
-                        )
+        // HUD minimo, integrado como "panel de corcho" en la esquina, NO como dashboard central.
+        Row(
+            modifier = Modifier.align(Alignment.TopStart).padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Surface(
+                modifier = Modifier.clip(RoundedCornerShape(14.dp)),
+                color = C.MarcoMadera,
+                tonalElevation = 4.dp
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
-                    ClassroomObjectSlot(
-                        state = obj.state,
-                        onClick = {
-                            if (obj.state.name == "BLOQUEADO") onBlockedTap(obj) else onObjectTap(obj)
-                        }
-                    ) {
-                        ObjectVisualFor(obj.type, sizeDp)
-                    }
+                    Text("Nivel $aulaLevel", color = C.TizaBlanca, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge)
+                    Spacer(Modifier.width(8.dp))
+                    Text("$totalXp XP", color = C.TizaAmarilla, style = MaterialTheme.typography.labelLarge)
+                }
+            }
+            Surface(
+                shape = CircleShape,
+                color = C.MarcoMadera,
+                tonalElevation = 4.dp,
+                onClick = onOpenGuide
+            ) {
+                Box(Modifier.size(36.dp), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Filled.QuestionMark, contentDescription = "Como funciona el aula", tint = C.TizaAmarilla, modifier = Modifier.size(16.dp))
                 }
             }
         }
 
-        // HUD minimo, integrado como "panel de corcho" en la esquina, NO como dashboard central.
+        if (showGuide) {
+            AulaGuideOverlay(onDismiss = onDismissGuide)
+        }
+    }
+}
+
+@Composable
+private fun AulaGuideOverlay(onDismiss: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.55f)),
+        contentAlignment = Alignment.Center
+    ) {
         Surface(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(12.dp)
-                .clip(RoundedCornerShape(14.dp)),
-            color = C.MarcoMadera,
-            tonalElevation = 4.dp
+            shape = RoundedCornerShape(20.dp),
+            color = C.ParedCrema,
+            modifier = Modifier.padding(28.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-            ) {
-                Text("Nivel $aulaLevel", color = C.TizaBlanca, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelLarge)
-                Spacer(Modifier.width(8.dp))
-                Text("$totalXp XP", color = C.TizaAmarilla, style = MaterialTheme.typography.labelLarge)
+            Column(Modifier.padding(22.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Bienvenido a tu aula", style = MaterialTheme.typography.titleLarge, color = C.TextoOscuro, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                    IconButton(onClick = onDismiss) {
+                        Icon(Icons.Filled.Close, contentDescription = "Cerrar guia", tint = C.TextoOscuro)
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    "Toca los objetos para abrir cada actividad. Los que tienen candado se desbloquean subiendo de nivel.",
+                    color = C.TextoSuave, style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(Modifier.height(14.dp))
+                GuideTip("Pizarra", "Organiza las actividades del dia en bloques de tiempo.")
+                GuideTip("Estante", "Prepara los materiales para una mision.")
+                GuideTip("Reloj", "Practica cuanto te alcanza el tiempo antes del recreo.")
+                GuideTip("Carteles", "Resuelve situaciones de convivencia del aula.")
+                Spacer(Modifier.height(18.dp))
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(containerColor = C.TizaAmarilla),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Entendido, ¡a explorar!", color = C.TextoOscuro, fontWeight = FontWeight.Bold)
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun GuideTip(title: String, description: String) {
+    Row(modifier = Modifier.padding(vertical = 4.dp)) {
+        Text("•", color = C.AcentoNaranja, fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 8.dp))
+        Column {
+            Text(title, color = C.TextoOscuro, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
+            Text(description, color = C.TextoSuave, style = MaterialTheme.typography.bodySmall)
         }
     }
 }

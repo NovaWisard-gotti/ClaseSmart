@@ -21,7 +21,9 @@ data class RelojTiempoUiState(
         PlannableActivity("t4", "Ordenar el estante", Subject.LIMPIEZA, 8)
     ),
     val chosenTasks: List<PlannableActivity> = emptyList(),
-    val result: TimeManagementEngine.TimeChallengeResult? = null
+    val result: TimeManagementEngine.TimeChallengeResult? = null,
+    val confirmationMessage: String? = null,
+    val validationMessage: String? = null
 )
 
 class RelojTiempoViewModel(private val progressRepository: ProgressRepository) : ViewModel() {
@@ -37,13 +39,29 @@ class RelojTiempoViewModel(private val progressRepository: ProgressRepository) :
     }
 
     fun confirm() {
-        val result = _uiState.value.result ?: return
+        val state = _uiState.value
+        val result = state.result
+        if (result == null || state.chosenTasks.isEmpty()) {
+            _uiState.value = state.copy(validationMessage = "Elige al menos una tarea antes de confirmar.")
+            return
+        }
         viewModelScope.launch {
+            val xp = if (result.fits) 12 else 3
             progressRepository.recordInteractionAndAwardXp(
                 kind = "TIME_CHALLENGE", referenceId = "reto_tiempo",
-                xpAwarded = if (result.fits) 12 else 3, wasSuccessful = result.fits, nowEpochMs = System.currentTimeMillis()
+                xpAwarded = xp, wasSuccessful = result.fits, nowEpochMs = System.currentTimeMillis()
             )
+            val message = if (result.fits) "¡Plan confirmado! +$xp XP" else "Plan confirmado con ajustes pendientes. +$xp XP"
+            _uiState.value = _uiState.value.copy(confirmationMessage = message)
         }
+    }
+
+    fun consumeConfirmationMessage() {
+        _uiState.value = _uiState.value.copy(confirmationMessage = null)
+    }
+
+    fun consumeValidationMessage() {
+        _uiState.value = _uiState.value.copy(validationMessage = null)
     }
 
     class Factory(private val progressRepository: ProgressRepository) : ViewModelProvider.Factory {

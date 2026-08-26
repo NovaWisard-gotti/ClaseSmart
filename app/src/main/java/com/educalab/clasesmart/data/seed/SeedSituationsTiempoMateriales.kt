@@ -17,7 +17,15 @@ object SeedSituationsTiempoMateriales {
         ClassroomSituationEntity("sit_mat_2", "Falta un material clave", "Para el experimento hace falta el recipiente y no esta preparado.", "MATERIALES", "8-9", "vera,noa"),
         ClassroomSituationEntity("sit_mat_3", "Material fragil en manos poco cuidadosas", "Dani lleva los botes de pintura corriendo hacia la mesa.", "MATERIALES", "8-9", "dani"),
         ClassroomSituationEntity("sit_mat_4", "Todos quieren el mismo color", "Varios companeros quieren el mismo papel de color para el mural.", "MATERIALES", "8-9", "mia,cata,bruno"),
-        ClassroomSituationEntity("sit_mat_5", "Material compartido sin devolver", "El diccionario compartido sigue en la mesa de ayer.", "MATERIALES", "10-12", "sam,teo")
+        ClassroomSituationEntity("sit_mat_5", "Material compartido sin devolver", "El diccionario compartido sigue en la mesa de ayer.", "MATERIALES", "10-12", "sam,teo"),
+
+        ClassroomSituationEntity("sit_tiempo_6", "El reloj de arena se acabo rapido", "El equipo penso que tenia mas tiempo del que en verdad quedaba para terminar el reto.", "TIEMPO", "8-9", "alex,mia"),
+        ClassroomSituationEntity("sit_tiempo_7", "Dos actividades a la misma hora", "Por error, el horario puso lectura compartida y experimento en el mismo bloque.", "TIEMPO", "10-12", "dani,leo"),
+        ClassroomSituationEntity("sit_tiempo_8", "El cronometro no se detuvo a tiempo", "El equipo se distrajo y el tiempo del reto de matematicas se paso sin darse cuenta.", "TIEMPO", "10-12", "bruno,sam"),
+
+        ClassroomSituationEntity("sit_mat_6", "Las tijeras andan sueltas", "Las tijeras de punta quedaron sobre la mesa sin su funda despues de manualidades.", "MATERIALES", "8-9", "cata,teo"),
+        ClassroomSituationEntity("sit_mat_7", "No alcanzan los cuadernos de campo", "Hay un cuaderno de campo menos que integrantes en el equipo de observacion.", "MATERIALES", "10-12", "vera,alex"),
+        ClassroomSituationEntity("sit_mat_8", "El pegamento se quedo destapado", "El bote de pegamento quedo abierto despues de la ultima actividad de manualidades.", "MATERIALES", "8-9", "mia,noa")
     )
 
     val options = listOf(
@@ -59,7 +67,31 @@ object SeedSituationsTiempoMateriales {
 
         SituationOptionEntity("opt_mat5_a", "sit_mat_5", "Devolverlo al estante antes de empezar otra cosa", 2),
         SituationOptionEntity("opt_mat5_b", "sit_mat_5", "Usarlo de todas formas sin devolverlo despues", 1),
-        SituationOptionEntity("opt_mat5_c", "sit_mat_5", "Dejarlo donde esta para que otro lo mueva", 0)
+        SituationOptionEntity("opt_mat5_c", "sit_mat_5", "Dejarlo donde esta para que otro lo mueva", 0),
+
+        SituationOptionEntity("opt_tiempo6_a", "sit_tiempo_6", "Revisar el tiempo real antes de seguir y ajustar el plan", 2),
+        SituationOptionEntity("opt_tiempo6_b", "sit_tiempo_6", "Seguir igual sin mirar el tiempo", 1),
+        SituationOptionEntity("opt_tiempo6_c", "sit_tiempo_6", "Detener todo de golpe sin avisar al equipo", 0),
+
+        SituationOptionEntity("opt_tiempo7_a", "sit_tiempo_7", "Elegir juntos cual va primero y mover la otra", 2),
+        SituationOptionEntity("opt_tiempo7_b", "sit_tiempo_7", "Intentar hacer las dos mitad y mitad", 1),
+        SituationOptionEntity("opt_tiempo7_c", "sit_tiempo_7", "No hacer ninguna de las dos", 0),
+
+        SituationOptionEntity("opt_tiempo8_a", "sit_tiempo_8", "Anotar hasta donde llegaron y seguir la proxima vez", 2),
+        SituationOptionEntity("opt_tiempo8_b", "sit_tiempo_8", "Seguir un poco mas aunque el tiempo ya se acabo", 1),
+        SituationOptionEntity("opt_tiempo8_c", "sit_tiempo_8", "Borrar todo y no contar lo que hicieron", 0),
+
+        SituationOptionEntity("opt_mat6_a", "sit_mat_6", "Guardarlas en su funda antes de seguir", 2),
+        SituationOptionEntity("opt_mat6_b", "sit_mat_6", "Dejarlas a un lado de la mesa", 1),
+        SituationOptionEntity("opt_mat6_c", "sit_mat_6", "Dejarlas como estan entre los demas materiales", 0),
+
+        SituationOptionEntity("opt_mat7_a", "sit_mat_7", "Turnarse para anotar por turnos en el mismo cuaderno", 2),
+        SituationOptionEntity("opt_mat7_b", "sit_mat_7", "Que uno solo anote por todos sin turnarse", 1),
+        SituationOptionEntity("opt_mat7_c", "sit_mat_7", "Empezar la actividad sin anotar nada", 0),
+
+        SituationOptionEntity("opt_mat8_a", "sit_mat_8", "Cerrarlo bien y guardarlo en su lugar", 2),
+        SituationOptionEntity("opt_mat8_b", "sit_mat_8", "Dejarlo tapado pero encima de la mesa", 1),
+        SituationOptionEntity("opt_mat8_c", "sit_mat_8", "Dejarlo abierto donde esta", 0)
     )
 
     val outcomes = listOf(
@@ -101,6 +133,30 @@ object SeedSituationsTiempoMateriales {
 
         SituationOutcomeEntity("out_mat5_a", "opt_mat5_a", "El diccionario quedo listo para quien lo necesite despues.", 15),
         SituationOutcomeEntity("out_mat5_b", "opt_mat5_b", "El diccionario se uso, pero nadie sabra donde buscarlo luego.", 8),
-        SituationOutcomeEntity("out_mat5_c", "opt_mat5_c", "El diccionario sigue perdido para el resto de la clase.", 2)
+        SituationOutcomeEntity("out_mat5_c", "opt_mat5_c", "El diccionario sigue perdido para el resto de la clase.", 2),
+
+        SituationOutcomeEntity("out_tiempo6_a", "opt_tiempo6_a", "El equipo ajusto el ritmo y termino a tiempo.", 15),
+        SituationOutcomeEntity("out_tiempo6_b", "opt_tiempo6_b", "El equipo se quedo sin tiempo para el ultimo paso.", 8),
+        SituationOutcomeEntity("out_tiempo6_c", "opt_tiempo6_c", "El equipo se quedo confundido sin saber que hacer.", 2),
+
+        SituationOutcomeEntity("out_tiempo7_a", "opt_tiempo7_a", "Las dos actividades se hicieron completas, una despues de la otra.", 15),
+        SituationOutcomeEntity("out_tiempo7_b", "opt_tiempo7_b", "Ninguna de las dos quedo del todo terminada.", 8),
+        SituationOutcomeEntity("out_tiempo7_c", "opt_tiempo7_c", "El equipo perdio todo el bloque de tiempo sin avanzar.", 2),
+
+        SituationOutcomeEntity("out_tiempo8_a", "opt_tiempo8_a", "El equipo supo exactamente por donde retomar despues.", 15),
+        SituationOutcomeEntity("out_tiempo8_b", "opt_tiempo8_b", "El equipo avanzo algo mas, pero sin saber cuanto tiempo uso en verdad.", 8),
+        SituationOutcomeEntity("out_tiempo8_c", "opt_tiempo8_c", "Se perdio todo el trabajo que habian hecho hasta ese momento.", 2),
+
+        SituationOutcomeEntity("out_mat6_a", "opt_mat6_a", "Las tijeras quedaron guardadas de forma segura.", 15),
+        SituationOutcomeEntity("out_mat6_b", "opt_mat6_b", "Las tijeras siguieron sueltas, aunque un poco mas alejadas.", 8),
+        SituationOutcomeEntity("out_mat6_c", "opt_mat6_c", "Cualquiera podria lastimarse al buscar otro material.", 2),
+
+        SituationOutcomeEntity("out_mat7_a", "opt_mat7_a", "Todos pudieron participar en las anotaciones.", 15),
+        SituationOutcomeEntity("out_mat7_b", "opt_mat7_b", "La actividad avanzo, pero solo uno registro las observaciones.", 8),
+        SituationOutcomeEntity("out_mat7_c", "opt_mat7_c", "El equipo no tiene registro de lo que observo.", 2),
+
+        SituationOutcomeEntity("out_mat8_a", "opt_mat8_a", "El pegamento seguira sirviendo para la proxima clase.", 15),
+        SituationOutcomeEntity("out_mat8_b", "opt_mat8_b", "El pegamento quedo protegido, aunque fuera de su sitio.", 8),
+        SituationOutcomeEntity("out_mat8_c", "opt_mat8_c", "El pegamento se seco y no sirvio para la siguiente clase.", 2)
     )
 }

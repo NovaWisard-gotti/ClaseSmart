@@ -1,22 +1,28 @@
 package com.educalab.clasesmart.ui.navigation
 
+import android.content.Context
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.educalab.clasesmart.di.AppContainer
-import com.educalab.clasesmart.domain.model.SituationCategory
 import com.educalab.clasesmart.ui.screens.*
 import com.educalab.clasesmart.ui.scene.ClassroomScene
 import com.educalab.clasesmart.ui.viewmodel.*
 import kotlinx.coroutines.flow.first
+
+private const val PREFS_NAME = "clasesmart_prefs"
+private const val PREF_AULA_GUIDE_SEEN = "aula_guide_seen"
 
 @Composable
 fun ClaseSmartNavGraph(container: AppContainer) {
@@ -48,6 +54,9 @@ fun ClaseSmartNavGraph(container: AppContainer) {
         ) {
             val vm: ClassroomViewModel = viewModel(factory = ClassroomViewModel.Factory(container.classroomRepository, container.progressRepository))
             val state by vm.uiState.collectAsState()
+            val context = LocalContext.current
+            val prefs = remember { context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
+            var showGuide by remember { mutableStateOf(!prefs.getBoolean(PREF_AULA_GUIDE_SEEN, false)) }
             ClassroomScene(
                 objects = state.objects,
                 aulaLevel = state.aulaLevel,
@@ -61,12 +70,18 @@ fun ClaseSmartNavGraph(container: AppContainer) {
                         "BIBLIOTECA" -> ClaseSmartRoutes.BIBLIOTECA
                         "MOCHILA" -> ClaseSmartRoutes.PIZARRA_IDEAS
                         "PUERTA" -> ClaseSmartRoutes.PROYECTOS
-                        "CARTEL" -> ClaseSmartRoutes.situaciones(SituationCategory.CONVIVENCIA.name)
+                        "CARTEL" -> ClaseSmartRoutes.SITUACIONES
                         else -> null
                     }
                     route?.let { navController.navigate(it) }
                 },
-                onBlockedTap = { /* Se podria mostrar un mensaje "se desbloquea en el nivel X" */ }
+                onBlockedTap = { /* Se podria mostrar un mensaje "se desbloquea en el nivel X" */ },
+                showGuide = showGuide,
+                onDismissGuide = {
+                    showGuide = false
+                    prefs.edit().putBoolean(PREF_AULA_GUIDE_SEEN, true).apply()
+                },
+                onOpenGuide = { showGuide = true }
             )
         }
 
@@ -103,12 +118,9 @@ fun ClaseSmartNavGraph(container: AppContainer) {
             ClaseSmartRoutes.SITUACIONES,
             enterTransition = ClassroomTransitions.enterZoomIn,
             popExitTransition = ClassroomTransitions.popExitZoomBack
-        ) { backStackEntry ->
-            val categoryName = backStackEntry.arguments?.getString("categoria") ?: SituationCategory.CONVIVENCIA.name
-            val category = runCatching { SituationCategory.valueOf(categoryName) }.getOrDefault(SituationCategory.CONVIVENCIA)
+        ) {
             val vm: SituacionesViewModel = viewModel(
-                key = categoryName,
-                factory = SituacionesViewModel.Factory(category, container.situationRepository, container.progressRepository, container.badgeRepository)
+                factory = SituacionesViewModel.Factory(container.situationRepository, container.progressRepository, container.badgeRepository)
             )
             SituacionesScreen(vm) { navController.popBackStack() }
         }

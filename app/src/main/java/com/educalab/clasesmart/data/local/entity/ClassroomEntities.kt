@@ -39,7 +39,8 @@ data class ClassroomObjectEntity(
     val zoneX: Float,
     val zoneY: Float,
     val state: String = "DISPONIBLE", // BLOQUEADO, DISPONIBLE, INICIADO, COMPLETADO, DOMINADO
-    val unlockLevel: Int = 1
+    val unlockLevel: Int = 1,
+    val sizeScale: Float = 1f // escala del tamano base del tipo, para objetos "accesorio" mas pequenos
 )
 
 @Entity(tableName = "classroom_decoration")

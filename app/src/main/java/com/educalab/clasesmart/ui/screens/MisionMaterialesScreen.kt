@@ -5,11 +5,15 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -27,62 +31,95 @@ import com.educalab.clasesmart.ui.viewmodel.MaterialesViewModel
 @Composable
 fun MisionMaterialesScreen(viewModel: MaterialesViewModel, onExit: () -> Unit) {
     val state by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    Column(Modifier.fillMaxSize().background(C.ParedCrema).padding(16.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Surface(shape = RoundedCornerShape(50), color = C.MarcoMadera, onClick = onExit) {
-                Text("← Aula", modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp), color = C.TizaBlanca, fontWeight = FontWeight.Bold)
-            }
-            Spacer(Modifier.width(8.dp))
-            Text("Mision de materiales", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = C.TextoOscuro)
+    LaunchedEffect(state.confirmationMessage) {
+        val message = state.confirmationMessage
+        if (message != null) {
+            snackbarHostState.showSnackbar(message, duration = SnackbarDuration.Short)
+            viewModel.consumeConfirmationMessage()
+            onExit()
         }
-        Spacer(Modifier.height(8.dp))
-        Text(state.mission.activityTitle, color = C.TextoSuave, style = MaterialTheme.typography.bodyMedium)
-        Spacer(Modifier.height(16.dp))
+    }
 
-        Text("Estante (toca para llevar a la mesa)", style = MaterialTheme.typography.titleMedium, color = C.TextoOscuro, fontWeight = FontWeight.SemiBold)
-        Spacer(Modifier.height(8.dp))
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+    Scaffold(
+        containerColor = C.ParedCrema,
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .background(C.ParedCrema)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp)
         ) {
-            items(state.shelfMaterials) { material ->
-                MaterialCard(material, C.AcentoAzulCielo) { viewModel.moveToTable(material) }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(shape = RoundedCornerShape(50), color = C.MarcoMadera, onClick = onExit) {
+                    Text("← Aula", modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp), color = C.TizaBlanca, fontWeight = FontWeight.Bold)
+                }
+                Spacer(Modifier.width(8.dp))
+                Text("Mision de materiales", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = C.TextoOscuro)
             }
-        }
+            Spacer(Modifier.height(8.dp))
+            Text(state.mission.activityTitle, color = C.TextoSuave, style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.height(16.dp))
 
-        Spacer(Modifier.height(12.dp))
-        Text("Mesa de trabajo", style = MaterialTheme.typography.titleMedium, color = C.TextoOscuro, fontWeight = FontWeight.SemiBold)
-        Spacer(Modifier.height(8.dp))
-        Surface(shape = RoundedCornerShape(16.dp), color = C.SueloMadera.copy(alpha = 0.35f), modifier = Modifier.fillMaxWidth().heightIn(min = 90.dp)) {
-            if (state.tableMaterials.isEmpty()) {
-                Box(Modifier.padding(16.dp)) { Text("Arrastra o toca materiales del estante para traerlos aqui.", color = C.TextoSuave) }
-            } else {
-                Row(Modifier.padding(10.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    state.tableMaterials.forEach { material ->
-                        MaterialCard(material, C.TizaAmarilla) { viewModel.returnToShelf(material) }
-                    }
+            Text("Estante (toca para llevar a la mesa)", style = MaterialTheme.typography.titleMedium, color = C.TextoOscuro, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(8.dp))
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                modifier = Modifier.height(260.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(state.shelfMaterials) { material ->
+                    MaterialCard(material, C.AcentoAzulCielo) { viewModel.moveToTable(material) }
                 }
             }
-        }
 
-        state.evaluation?.let {
+            Spacer(Modifier.height(12.dp))
+            Text("Mesa de trabajo", style = MaterialTheme.typography.titleMedium, color = C.TextoOscuro, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(8.dp))
+            Surface(shape = RoundedCornerShape(16.dp), color = C.SueloMadera.copy(alpha = 0.35f), modifier = Modifier.fillMaxWidth().heightIn(min = 90.dp)) {
+                if (state.tableMaterials.isEmpty()) {
+                    Box(Modifier.padding(16.dp)) { Text("Toca materiales del estante para traerlos aqui.", color = C.TextoSuave) }
+                } else {
+                    FlowRowMaterials(state.tableMaterials) { material -> viewModel.returnToShelf(material) }
+                }
+            }
+
+            if (state.consequenceText.isNotBlank()) {
+                Spacer(Modifier.height(10.dp))
+                Surface(
+                    shape = RoundedCornerShape(14.dp),
+                    color = state.evaluation?.let { if (it.isReady) C.AcentoVerdeManzana else C.TizaRosa } ?: C.TizaAmarilla,
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text(state.consequenceText, modifier = Modifier.padding(12.dp), color = C.TextoOscuro) }
+            }
+
             Spacer(Modifier.height(10.dp))
-            Surface(
-                shape = RoundedCornerShape(14.dp),
-                color = if (it.isReady) C.AcentoVerdeManzana else C.TizaRosa,
+            Button(
+                onClick = { viewModel.confirmMission() },
+                colors = ButtonDefaults.buttonColors(containerColor = C.PizarraVerde),
                 modifier = Modifier.fillMaxWidth()
-            ) { Text(state.consequenceText, modifier = Modifier.padding(12.dp), color = C.TextoOscuro) }
+            ) { Text("Empezar la actividad", color = C.TizaBlanca) }
         }
+    }
+}
 
-        Spacer(Modifier.height(10.dp))
-        Button(
-            onClick = { viewModel.confirmMission() },
-            colors = ButtonDefaults.buttonColors(containerColor = C.PizarraVerde),
-            modifier = Modifier.fillMaxWidth()
-        ) { Text("Empezar la actividad", color = C.TizaBlanca) }
+@Composable
+private fun FlowRowMaterials(materials: List<SchoolMaterial>, onClick: (SchoolMaterial) -> Unit) {
+    // Grid simple (no LazyVerticalGrid, la lista de la mesa de trabajo es corta) que
+    // envuelve en varias filas en vez de desbordar horizontalmente sin control.
+    val rows = materials.chunked(3)
+    Column(Modifier.padding(10.dp)) {
+        rows.forEach { row ->
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                row.forEach { material -> MaterialCard(material, C.TizaAmarilla) { onClick(material) } }
+            }
+            if (row != rows.last()) Spacer(Modifier.height(8.dp))
+        }
     }
 }
 

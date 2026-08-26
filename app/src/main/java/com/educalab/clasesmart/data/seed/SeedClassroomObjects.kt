@@ -10,37 +10,56 @@ import com.educalab.clasesmart.data.local.entity.ClassroomObjectEntity
  */
 object SeedClassroomObjects {
 
+    /**
+     * Posiciones repartidas en 10 "filas" claramente separadas a lo largo del
+     * lienzo vertical alto y scrolleable de ClassroomScene (SCENE_HEIGHT), de
+     * forma que ningun objeto se superponga con otro (se calculo el hueco
+     * necesario segun objectSizeFor(type) * sizeScale). Los objetos que son
+     * variantes "accesorio" de un tipo (p.ej. tiza/borrador de la pizarra,
+     * libros de la biblioteca) usan sizeScale < 1 para no verse tan grandes
+     * como el objeto principal de su mismo tipo.
+     */
     val objects = listOf(
-        ClassroomObjectEntity("obj_pizarra", objectType = "PIZARRA", zoneX = 0.5f, zoneY = 0.18f, state = "DISPONIBLE", unlockLevel = 1),
-        ClassroomObjectEntity("obj_reloj", objectType = "RELOJ", zoneX = 0.82f, zoneY = 0.14f, state = "DISPONIBLE", unlockLevel = 1),
-        ClassroomObjectEntity("obj_estante", objectType = "ESTANTE", zoneX = 0.12f, zoneY = 0.32f, state = "DISPONIBLE", unlockLevel = 1),
-        ClassroomObjectEntity("obj_pupitres", objectType = "PUPITRES", zoneX = 0.5f, zoneY = 0.6f, state = "BLOQUEADO", unlockLevel = 2),
-        ClassroomObjectEntity("obj_biblioteca", objectType = "BIBLIOTECA", zoneX = 0.85f, zoneY = 0.55f, state = "BLOQUEADO", unlockLevel = 3),
-        ClassroomObjectEntity("obj_mochila", objectType = "MOCHILA", zoneX = 0.2f, zoneY = 0.78f, state = "BLOQUEADO", unlockLevel = 4),
-        ClassroomObjectEntity("obj_puerta", objectType = "PUERTA", zoneX = 0.06f, zoneY = 0.6f, state = "BLOQUEADO", unlockLevel = 5),
-        ClassroomObjectEntity("obj_cartel_normas", objectType = "CARTEL", zoneX = 0.32f, zoneY = 0.1f, state = "DISPONIBLE", unlockLevel = 1),
-        ClassroomObjectEntity("obj_cartel_cumples", objectType = "CARTEL", zoneX = 0.68f, zoneY = 0.08f, state = "BLOQUEADO", unlockLevel = 4),
-        ClassroomObjectEntity("obj_planta_1", objectType = "PLANTA", zoneX = 0.05f, zoneY = 0.15f, state = "BLOQUEADO", unlockLevel = 6),
-        ClassroomObjectEntity("obj_planta_2", objectType = "PLANTA", zoneX = 0.95f, zoneY = 0.78f, state = "BLOQUEADO", unlockLevel = 6),
-        ClassroomObjectEntity("obj_papelera", objectType = "PAPELERA", zoneX = 0.9f, zoneY = 0.9f, state = "DISPONIBLE", unlockLevel = 1),
-        ClassroomObjectEntity("obj_ventana_1", objectType = "CARTEL", zoneX = 0.15f, zoneY = 0.05f, state = "DISPONIBLE", unlockLevel = 1),
-        ClassroomObjectEntity("obj_ventana_2", objectType = "CARTEL", zoneX = 0.85f, zoneY = 0.05f, state = "DISPONIBLE", unlockLevel = 1),
-        ClassroomObjectEntity("obj_mesa_1", objectType = "PUPITRES", zoneX = 0.3f, zoneY = 0.55f, state = "BLOQUEADO", unlockLevel = 2),
-        ClassroomObjectEntity("obj_mesa_2", objectType = "PUPITRES", zoneX = 0.7f, zoneY = 0.55f, state = "BLOQUEADO", unlockLevel = 2),
-        ClassroomObjectEntity("obj_mesa_3", objectType = "PUPITRES", zoneX = 0.5f, zoneY = 0.72f, state = "BLOQUEADO", unlockLevel = 2),
-        ClassroomObjectEntity("obj_estante_2", objectType = "ESTANTE", zoneX = 0.12f, zoneY = 0.45f, state = "DISPONIBLE", unlockLevel = 1),
-        ClassroomObjectEntity("obj_libro_1", objectType = "BIBLIOTECA", zoneX = 0.83f, zoneY = 0.45f, state = "BLOQUEADO", unlockLevel = 3),
-        ClassroomObjectEntity("obj_libro_2", objectType = "BIBLIOTECA", zoneX = 0.88f, zoneY = 0.62f, state = "BLOQUEADO", unlockLevel = 3),
-        ClassroomObjectEntity("obj_reloj_arena", objectType = "RELOJ", zoneX = 0.75f, zoneY = 0.2f, state = "DISPONIBLE", unlockLevel = 1),
-        ClassroomObjectEntity("obj_tiza_caja", objectType = "PIZARRA", zoneX = 0.42f, zoneY = 0.24f, state = "DISPONIBLE", unlockLevel = 1),
-        ClassroomObjectEntity("obj_borrador", objectType = "PIZARRA", zoneX = 0.58f, zoneY = 0.24f, state = "DISPONIBLE", unlockLevel = 1),
-        ClassroomObjectEntity("obj_silla_1", objectType = "PUPITRES", zoneX = 0.28f, zoneY = 0.63f, state = "BLOQUEADO", unlockLevel = 2),
-        ClassroomObjectEntity("obj_silla_2", objectType = "PUPITRES", zoneX = 0.72f, zoneY = 0.63f, state = "BLOQUEADO", unlockLevel = 2),
-        ClassroomObjectEntity("obj_alfombra", objectType = "CARTEL", zoneX = 0.5f, zoneY = 0.85f, state = "DISPONIBLE", unlockLevel = 1),
-        ClassroomObjectEntity("obj_perchero", objectType = "MOCHILA", zoneX = 0.08f, zoneY = 0.78f, state = "BLOQUEADO", unlockLevel = 4),
-        ClassroomObjectEntity("obj_calendario", objectType = "RELOJ", zoneX = 0.9f, zoneY = 0.28f, state = "DISPONIBLE", unlockLevel = 1),
-        ClassroomObjectEntity("obj_organizador", objectType = "ESTANTE", zoneX = 0.18f, zoneY = 0.38f, state = "DISPONIBLE", unlockLevel = 1),
-        ClassroomObjectEntity("obj_letrero_puerta", objectType = "PUERTA", zoneX = 0.1f, zoneY = 0.52f, state = "BLOQUEADO", unlockLevel = 5)
+        // Fila 1 - pared frontal: ventanas y carteles
+        ClassroomObjectEntity("obj_ventana_1", objectType = "CARTEL", zoneX = 0.14f, zoneY = 0.032f, state = "DISPONIBLE", unlockLevel = 1),
+        ClassroomObjectEntity("obj_cartel_normas", objectType = "CARTEL", zoneX = 0.38f, zoneY = 0.032f, state = "DISPONIBLE", unlockLevel = 1),
+        ClassroomObjectEntity("obj_cartel_cumples", objectType = "CARTEL", zoneX = 0.62f, zoneY = 0.032f, state = "BLOQUEADO", unlockLevel = 4),
+        ClassroomObjectEntity("obj_ventana_2", objectType = "CARTEL", zoneX = 0.86f, zoneY = 0.032f, state = "DISPONIBLE", unlockLevel = 1),
+        // Fila 2 - pizarra y sus accesorios (mas pequenos)
+        ClassroomObjectEntity("obj_pizarra", objectType = "PIZARRA", zoneX = 0.5f, zoneY = 0.132f, state = "DISPONIBLE", unlockLevel = 1),
+        ClassroomObjectEntity("obj_tiza_caja", objectType = "PIZARRA", zoneX = 0.18f, zoneY = 0.132f, state = "DISPONIBLE", unlockLevel = 1, sizeScale = 0.4f),
+        ClassroomObjectEntity("obj_borrador", objectType = "PIZARRA", zoneX = 0.82f, zoneY = 0.132f, state = "DISPONIBLE", unlockLevel = 1, sizeScale = 0.4f),
+        // Fila 3 - relojes
+        ClassroomObjectEntity("obj_reloj", objectType = "RELOJ", zoneX = 0.2f, zoneY = 0.214f, state = "DISPONIBLE", unlockLevel = 1),
+        ClassroomObjectEntity("obj_reloj_arena", objectType = "RELOJ", zoneX = 0.5f, zoneY = 0.214f, state = "DISPONIBLE", unlockLevel = 1, sizeScale = 0.8f),
+        ClassroomObjectEntity("obj_calendario", objectType = "RELOJ", zoneX = 0.8f, zoneY = 0.214f, state = "DISPONIBLE", unlockLevel = 1, sizeScale = 0.8f),
+        // Fila 4 - estantes
+        ClassroomObjectEntity("obj_estante", objectType = "ESTANTE", zoneX = 0.18f, zoneY = 0.295f, state = "DISPONIBLE", unlockLevel = 1),
+        ClassroomObjectEntity("obj_estante_2", objectType = "ESTANTE", zoneX = 0.52f, zoneY = 0.295f, state = "DISPONIBLE", unlockLevel = 1, sizeScale = 0.75f),
+        ClassroomObjectEntity("obj_organizador", objectType = "ESTANTE", zoneX = 0.84f, zoneY = 0.295f, state = "DISPONIBLE", unlockLevel = 1, sizeScale = 0.75f),
+        // Fila 5 - rincon de lectura
+        ClassroomObjectEntity("obj_biblioteca", objectType = "BIBLIOTECA", zoneX = 0.8f, zoneY = 0.386f, state = "BLOQUEADO", unlockLevel = 3),
+        ClassroomObjectEntity("obj_libro_1", objectType = "BIBLIOTECA", zoneX = 0.5f, zoneY = 0.386f, state = "BLOQUEADO", unlockLevel = 3, sizeScale = 0.5f),
+        ClassroomObjectEntity("obj_libro_2", objectType = "BIBLIOTECA", zoneX = 0.2f, zoneY = 0.386f, state = "BLOQUEADO", unlockLevel = 3, sizeScale = 0.5f),
+        // Fila 6 - mesas (fila A)
+        ClassroomObjectEntity("obj_pupitres", objectType = "PUPITRES", zoneX = 0.2f, zoneY = 0.482f, state = "BLOQUEADO", unlockLevel = 2),
+        ClassroomObjectEntity("obj_mesa_1", objectType = "PUPITRES", zoneX = 0.5f, zoneY = 0.482f, state = "BLOQUEADO", unlockLevel = 2),
+        ClassroomObjectEntity("obj_mesa_2", objectType = "PUPITRES", zoneX = 0.8f, zoneY = 0.482f, state = "BLOQUEADO", unlockLevel = 2),
+        // Fila 7 - mesas (fila B) y sillas
+        ClassroomObjectEntity("obj_mesa_3", objectType = "PUPITRES", zoneX = 0.5f, zoneY = 0.555f, state = "BLOQUEADO", unlockLevel = 2),
+        ClassroomObjectEntity("obj_silla_1", objectType = "PUPITRES", zoneX = 0.22f, zoneY = 0.555f, state = "BLOQUEADO", unlockLevel = 2, sizeScale = 0.6f),
+        ClassroomObjectEntity("obj_silla_2", objectType = "PUPITRES", zoneX = 0.78f, zoneY = 0.555f, state = "BLOQUEADO", unlockLevel = 2, sizeScale = 0.6f),
+        // Fila 8 - alfombra central
+        ClassroomObjectEntity("obj_alfombra", objectType = "CARTEL", zoneX = 0.5f, zoneY = 0.636f, state = "DISPONIBLE", unlockLevel = 1, sizeScale = 1.6f),
+        // Fila 9 - plantas y papelera
+        ClassroomObjectEntity("obj_planta_1", objectType = "PLANTA", zoneX = 0.15f, zoneY = 0.718f, state = "BLOQUEADO", unlockLevel = 6),
+        ClassroomObjectEntity("obj_papelera", objectType = "PAPELERA", zoneX = 0.5f, zoneY = 0.718f, state = "DISPONIBLE", unlockLevel = 1),
+        ClassroomObjectEntity("obj_planta_2", objectType = "PLANTA", zoneX = 0.85f, zoneY = 0.718f, state = "BLOQUEADO", unlockLevel = 6),
+        // Fila 10 - pared trasera: mochilas y puerta
+        ClassroomObjectEntity("obj_mochila", objectType = "MOCHILA", zoneX = 0.12f, zoneY = 0.8f, state = "BLOQUEADO", unlockLevel = 4),
+        ClassroomObjectEntity("obj_perchero", objectType = "MOCHILA", zoneX = 0.38f, zoneY = 0.8f, state = "BLOQUEADO", unlockLevel = 4),
+        ClassroomObjectEntity("obj_puerta", objectType = "PUERTA", zoneX = 0.64f, zoneY = 0.8f, state = "BLOQUEADO", unlockLevel = 5),
+        ClassroomObjectEntity("obj_letrero_puerta", objectType = "PUERTA", zoneX = 0.88f, zoneY = 0.8f, state = "BLOQUEADO", unlockLevel = 5, sizeScale = 0.5f)
     )
 
     /** 20 decoraciones desbloqueables por XP real (Regla: minimo 20 decoraciones). */

@@ -24,6 +24,7 @@ data class MaterialesUiState(
     val tableMaterials: List<SchoolMaterial> = emptyList(),
     val evaluation: MaterialEvaluation? = null,
     val consequenceText: String = "",
+    val confirmationMessage: String? = null,
     val isLoading: Boolean = true
 )
 
@@ -72,7 +73,12 @@ class MaterialesViewModel(
     }
 
     fun confirmMission() {
-        val evaluation = _uiState.value.evaluation ?: return
+        val state = _uiState.value
+        val evaluation = state.evaluation
+        if (evaluation == null || state.tableMaterials.isEmpty()) {
+            _uiState.value = state.copy(consequenceText = "Lleva al menos un material a la mesa de trabajo antes de empezar.")
+            return
+        }
         viewModelScope.launch {
             val now = System.currentTimeMillis()
             if (evaluation.isReady) readyMissionsCount++
@@ -82,7 +88,15 @@ class MaterialesViewModel(
             )
             val newlyEarned = BadgeEngine.evaluateNewlyEarned(BadgeEngine.UserStats(materialMissionsReady = readyMissionsCount), emptySet())
             if (newlyEarned.isNotEmpty()) badgeRepository.awardBadges(newlyEarned, now)
+
+            val xp = if (evaluation.isReady) 18 else 4
+            val message = if (evaluation.isReady) "¡Actividad iniciada! +$xp XP" else "Actividad iniciada con algunos problemas. +$xp XP"
+            _uiState.value = _uiState.value.copy(confirmationMessage = message)
         }
+    }
+
+    fun consumeConfirmationMessage() {
+        _uiState.value = _uiState.value.copy(confirmationMessage = null)
     }
 
     class Factory(
