@@ -4,7 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,7 +40,13 @@ fun BibliotecaScreen(onExit: () -> Unit) {
     var correctCount by remember { mutableStateOf(0) }
     val current = RESOURCES.getOrNull(currentIndex)
 
-    Column(Modifier.fillMaxSize().background(C.ParedCrema).padding(16.dp)) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(C.ParedCrema)
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
+    ) {
         Row {
             Surface(shape = RoundedCornerShape(50), color = C.MarcoMadera, onClick = onExit) {
                 Text("← Aula", modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp), color = C.TizaBlanca, fontWeight = FontWeight.Bold)

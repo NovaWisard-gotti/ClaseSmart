@@ -84,6 +84,11 @@ class OrganizaDiaViewModel(
             evaluation = evaluation,
             consequenceText = ConsequenceEngine.forSchedule(evaluation.issues)
         )
+        // Autoguardado: cada vez que se arrastra o quita una actividad se persiste de inmediato,
+        // sin esperar a que el usuario pulse "Confirmar horario de hoy".
+        viewModelScope.launch {
+            scheduleRepository.saveAssignments("hoy", assignments)
+        }
     }
 
     fun confirmPlan() {

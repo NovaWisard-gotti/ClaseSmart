@@ -75,7 +75,6 @@ fun ClaseSmartNavGraph(container: AppContainer) {
                     }
                     route?.let { navController.navigate(it) }
                 },
-                onBlockedTap = { /* Se podria mostrar un mensaje "se desbloquea en el nivel X" */ },
                 showGuide = showGuide,
                 onDismissGuide = {
                     showGuide = false

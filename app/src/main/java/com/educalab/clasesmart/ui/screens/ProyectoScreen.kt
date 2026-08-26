@@ -2,7 +2,9 @@ package com.educalab.clasesmart.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
@@ -24,7 +26,13 @@ import com.educalab.clasesmart.ui.viewmodel.ProyectoViewModel
 fun ProyectoScreen(viewModel: ProyectoViewModel, onExit: () -> Unit) {
     val state by viewModel.uiState.collectAsState()
 
-    Column(Modifier.fillMaxSize().background(C.ParedCrema).padding(16.dp)) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(C.ParedCrema)
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Surface(shape = RoundedCornerShape(50), color = C.MarcoMadera, onClick = onExit) {
                 Text("← Aula", modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp), color = C.TizaBlanca, fontWeight = FontWeight.Bold)

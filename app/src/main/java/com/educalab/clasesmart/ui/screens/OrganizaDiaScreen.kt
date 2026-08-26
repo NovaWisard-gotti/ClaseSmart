@@ -2,9 +2,11 @@ package com.educalab.clasesmart.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -19,6 +21,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.educalab.clasesmart.domain.model.PlannableActivity
 import com.educalab.clasesmart.domain.model.TimeSlot
@@ -128,11 +131,15 @@ fun OrganizaDiaScreen(viewModel: OrganizaDiaViewModel, onExit: () -> Unit) {
                 Text("Actividades pendientes", style = MaterialTheme.typography.titleMedium, color = C.TextoOscuro, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
                 TextButton(onClick = { showAddDialog = true }) { Text("+ Nueva actividad") }
             }
+            Text("Cada actividad que arrastras se guarda automaticamente.", color = C.TextoSuave.copy(alpha = 0.8f), style = MaterialTheme.typography.labelSmall)
             Spacer(Modifier.height(8.dp))
 
             Box(Modifier.weight(1f)) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     state.pendingActivities.forEach { activity ->
@@ -183,8 +190,15 @@ fun OrganizaDiaScreen(viewModel: OrganizaDiaViewModel, onExit: () -> Unit) {
                                         )
                                     }
                             ) {
-                                Column(Modifier.padding(10.dp).width(120.dp)) {
-                                    Text(activity.title, color = C.TizaBlanca, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
+                                Column(Modifier.padding(10.dp).widthIn(min = 110.dp, max = 150.dp)) {
+                                    Text(
+                                        activity.title,
+                                        color = C.TizaBlanca,
+                                        fontWeight = FontWeight.Bold,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
                                     Text("${activity.durationMinutes} min", color = C.TizaBlanca.copy(alpha = 0.85f), style = MaterialTheme.typography.labelLarge)
                                 }
                             }

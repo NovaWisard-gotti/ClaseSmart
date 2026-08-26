@@ -23,6 +23,8 @@ data class EquiposUiState(
     val selected: List<SchoolCharacter> = emptyList(),
     val requiredSkills: List<Skill> = listOf(Skill.INVESTIGAR, Skill.OBSERVAR, Skill.EXPLICAR),
     val evaluation: TeamEvaluation? = null,
+    val confirmationMessage: String? = null,
+    val validationMessage: String? = null,
     val isLoading: Boolean = true
 )
 
@@ -58,19 +60,35 @@ class EquiposViewModel(
 
     fun confirmTeam() {
         val state = _uiState.value
-        val evaluation = state.evaluation ?: return
+        val evaluation = state.evaluation
+        if (evaluation == null || state.selected.isEmpty()) {
+            _uiState.value = state.copy(validationMessage = "Toca al menos un companero para formar el equipo antes de confirmar.")
+            return
+        }
         viewModelScope.launch {
             val now = System.currentTimeMillis()
             teamRepository.saveTeam("equipo_actividad", "act_ciencias", state.selected.map { it.characterId }, evaluation.coverageScore, now)
             val fullCoverage = evaluation.missingSkills.isEmpty() && state.selected.isNotEmpty()
             if (fullCoverage) fullCoverageCount++
+            val xp = if (fullCoverage) 16 else 6
             progressRepository.recordInteractionAndAwardXp(
                 kind = "TEAM_FORMED", referenceId = "equipo_actividad",
-                xpAwarded = if (fullCoverage) 16 else 6, wasSuccessful = fullCoverage, nowEpochMs = now
+                xpAwarded = xp, wasSuccessful = fullCoverage, nowEpochMs = now
             )
             val newlyEarned = BadgeEngine.evaluateNewlyEarned(BadgeEngine.UserStats(teamsWithFullCoverage = fullCoverageCount), emptySet())
             if (newlyEarned.isNotEmpty()) badgeRepository.awardBadges(newlyEarned, now)
+
+            val message = if (fullCoverage) "¡Equipo confirmado! +$xp XP" else "Equipo confirmado, aunque faltan habilidades por cubrir. +$xp XP"
+            _uiState.value = _uiState.value.copy(confirmationMessage = message)
         }
+    }
+
+    fun consumeConfirmationMessage() {
+        _uiState.value = _uiState.value.copy(confirmationMessage = null)
+    }
+
+    fun consumeValidationMessage() {
+        _uiState.value = _uiState.value.copy(validationMessage = null)
     }
 
     class Factory(

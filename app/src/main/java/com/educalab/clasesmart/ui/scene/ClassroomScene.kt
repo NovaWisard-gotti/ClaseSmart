@@ -11,21 +11,28 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.educalab.clasesmart.domain.model.ClassroomObject
 import com.educalab.clasesmart.domain.model.ClassroomObjectType
 import com.educalab.clasesmart.domain.model.Expression
 import com.educalab.clasesmart.ui.theme.ClaseSmartColors as C
+import kotlinx.coroutines.launch
 
 /** Altura virtual del lienzo del aula: es mas alta que la pantalla a proposito
  * para poder repartir los 30 objetos sin que se superpongan; se recorre
  * haciendo scroll vertical. */
 private val SCENE_HEIGHT = 2200.dp
+private val LABEL_BOX_WIDTH = 84.dp
+private val LABEL_BLOCK_HEIGHT = 20.dp
 
 /**
  * EL AULA. Pantalla principal de ClaseSmart (Regla "Home - regla especial":
@@ -39,42 +46,62 @@ fun ClassroomScene(
     aulaLevel: Int,
     totalXp: Int,
     onObjectTap: (ClassroomObject) -> Unit,
-    onBlockedTap: (ClassroomObject) -> Unit,
+    onBlockedTap: (ClassroomObject) -> Unit = {},
     modifier: Modifier = Modifier,
     showGuide: Boolean = false,
     onDismissGuide: () -> Unit = {},
     onOpenGuide: () -> Unit = {}
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
     Box(modifier = modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                .padding(top = 28.dp)
         ) {
             BoxWithConstraints(modifier = Modifier.fillMaxWidth().height(SCENE_HEIGHT)) {
                 ClassroomBackground(modifier = Modifier.matchParentSize())
 
                 objects.forEach { obj ->
                     val sizeDp = objectSizeFor(obj.type) * obj.sizeScale
+                    val boxWidth = maxOf(sizeDp, LABEL_BOX_WIDTH)
                     Box(
                         modifier = Modifier
+                            .width(boxWidth)
                             .offset(
-                                x = (maxWidth.value * obj.zoneX - sizeDp.value / 2).dp,
-                                y = (maxHeight.value * obj.zoneY - sizeDp.value / 2).dp
-                            )
+                                x = (maxWidth.value * obj.zoneX - boxWidth.value / 2).dp,
+                                y = (maxHeight.value * obj.zoneY - sizeDp.value / 2).dp - LABEL_BLOCK_HEIGHT
+                            ),
+                        contentAlignment = Alignment.TopCenter
                     ) {
-                        ClassroomObjectSlot(
-                            state = obj.state,
-                            onClick = {
-                                if (obj.state.name == "BLOQUEADO") onBlockedTap(obj) else onObjectTap(obj)
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            ObjectLabel(labelFor(obj.type))
+                            Spacer(Modifier.height(2.dp))
+                            ClassroomObjectSlot(
+                                state = obj.state,
+                                onClick = {
+                                    if (obj.state.name == "BLOQUEADO") {
+                                        onBlockedTap(obj)
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                "🔒 ${labelFor(obj.type)}: se desbloquea en el nivel ${obj.unlockLevel} (estas en el nivel $aulaLevel). Sigue ganando XP para subir."
+                                            )
+                                        }
+                                    } else onObjectTap(obj)
+                                }
+                            ) {
+                                ObjectVisualFor(obj.type, sizeDp)
                             }
-                        ) {
-                            ObjectVisualFor(obj.type, sizeDp)
                         }
                     }
                 }
             }
         }
+
+        SnackbarHost(snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 8.dp))
 
         // Personajes idle, siempre visibles al pie de la pantalla (no se mueven con el scroll).
         Row(
@@ -177,6 +204,39 @@ private fun GuideTip(title: String, description: String) {
             Text(description, color = C.TextoSuave, style = MaterialTheme.typography.bodySmall)
         }
     }
+}
+
+@Composable
+private fun ObjectLabel(text: String) {
+    Surface(
+        shape = RoundedCornerShape(6.dp),
+        color = C.MarcoMaderaOscuro.copy(alpha = 0.85f)
+    ) {
+        Text(
+            text,
+            color = C.TizaBlanca,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier
+                .widthIn(max = LABEL_BOX_WIDTH - 4.dp)
+                .padding(horizontal = 5.dp, vertical = 2.dp)
+        )
+    }
+}
+
+private fun labelFor(type: ClassroomObjectType): String = when (type) {
+    ClassroomObjectType.PIZARRA -> "Pizarra"
+    ClassroomObjectType.RELOJ -> "Reloj"
+    ClassroomObjectType.ESTANTE -> "Estante"
+    ClassroomObjectType.PUPITRES -> "Pupitres"
+    ClassroomObjectType.BIBLIOTECA -> "Biblioteca"
+    ClassroomObjectType.MOCHILA -> "Mochila"
+    ClassroomObjectType.PUERTA -> "Puerta"
+    ClassroomObjectType.CARTEL -> "Cartel"
+    ClassroomObjectType.PLANTA -> "Planta"
+    ClassroomObjectType.PAPELERA -> "Papelera"
 }
 
 private fun objectSizeFor(type: ClassroomObjectType) = when (type) {
