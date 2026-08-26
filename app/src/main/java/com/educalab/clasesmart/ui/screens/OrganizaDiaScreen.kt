@@ -1,7 +1,7 @@
 package com.educalab.clasesmart.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -82,7 +82,7 @@ fun OrganizaDiaScreen(viewModel: OrganizaDiaViewModel, onExit: () -> Unit) {
             }
 
             Spacer(Modifier.height(12.dp))
-            Text("Arrastra cada actividad hasta el bloque de tiempo donde encaje.", color = C.TextoSuave, style = MaterialTheme.typography.bodyMedium)
+            Text("Manten presionada una actividad y arrastrala hasta el bloque de tiempo donde encaje.", color = C.TextoSuave, style = MaterialTheme.typography.bodyMedium)
             Spacer(Modifier.height(16.dp))
 
             // Linea temporal (pizarra horizontal con bloques)
@@ -166,8 +166,12 @@ fun OrganizaDiaScreen(viewModel: OrganizaDiaViewModel, onExit: () -> Unit) {
                                         }
                                     }
                                     .pointerInput(activity.activityId) {
-                                        detectDragGestures(
-                                            onDragStart = { draggingActivity = activity; dragOffset = Offset.Zero },
+                                        // Se usa "despues de pulsacion larga" a proposito: asi un swipe
+                                        // rapido sobre la tarjeta lo captura el scroll horizontal de la
+                                        // fila, y solo mantener presionado inicia el arrastre hacia un
+                                        // bloque de tiempo (evita que ambos gestos compitan).
+                                        detectDragGesturesAfterLongPress(
+                                            onDragStart = { _ -> draggingActivity = activity; dragOffset = Offset.Zero },
                                             onDrag = { change, delta -> change.consume(); dragOffset += delta },
                                             onDragEnd = {
                                                 // Centro de la tarjeta en su posicion original + lo arrastrado = centro actual.
