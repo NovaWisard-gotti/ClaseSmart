@@ -18,10 +18,22 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+/** Una actividad posible para formar equipo, con sus habilidades necesarias. */
+data class TeamMission(val activityId: String, val title: String, val requiredSkills: List<Skill>)
+
+/** Varias misiones para que la actividad no sea siempre la misma al reentrar al modulo. */
+val TEAM_MISSIONS = listOf(
+    TeamMission("act_ciencias", "Investigacion en grupos", listOf(Skill.INVESTIGAR, Skill.OBSERVAR, Skill.EXPLICAR)),
+    TeamMission("act_mural", "Mural colaborativo del aula", listOf(Skill.DIBUJAR, Skill.ORGANIZAR, Skill.EXPLICAR)),
+    TeamMission("act_maqueta", "Construccion de una maqueta", listOf(Skill.CONSTRUIR, Skill.ORGANIZAR, Skill.OBSERVAR)),
+    TeamMission("act_feria", "Feria de experimentos", listOf(Skill.INVESTIGAR, Skill.OBSERVAR, Skill.CONSTRUIR)),
+    TeamMission("act_exposicion", "Exposicion oral para la clase", listOf(Skill.EXPLICAR, Skill.ORGANIZAR, Skill.DIBUJAR))
+)
+
 data class EquiposUiState(
+    val mission: TeamMission = TEAM_MISSIONS.first(),
     val allCharacters: List<SchoolCharacter> = emptyList(),
     val selected: List<SchoolCharacter> = emptyList(),
-    val requiredSkills: List<Skill> = listOf(Skill.INVESTIGAR, Skill.OBSERVAR, Skill.EXPLICAR),
     val evaluation: TeamEvaluation? = null,
     val confirmationMessage: String? = null,
     val validationMessage: String? = null,
@@ -35,7 +47,7 @@ class EquiposViewModel(
     private val badgeRepository: BadgeRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(EquiposUiState())
+    private val _uiState = MutableStateFlow(EquiposUiState(mission = TEAM_MISSIONS.random()))
     val uiState: StateFlow<EquiposUiState> = _uiState.asStateFlow()
 
     private var fullCoverageCount = 0
@@ -54,7 +66,7 @@ class EquiposViewModel(
         } else {
             state.selected + character
         }
-        val evaluation = TeamFormationEngine.evaluate(TeamProposal("equipo_actividad", "act_ciencias", newSelected), state.requiredSkills)
+        val evaluation = TeamFormationEngine.evaluate(TeamProposal("equipo_actividad", state.mission.activityId, newSelected), state.mission.requiredSkills)
         _uiState.value = state.copy(selected = newSelected, evaluation = evaluation)
     }
 
@@ -67,12 +79,12 @@ class EquiposViewModel(
         }
         viewModelScope.launch {
             val now = System.currentTimeMillis()
-            teamRepository.saveTeam("equipo_actividad", "act_ciencias", state.selected.map { it.characterId }, evaluation.coverageScore, now)
+            teamRepository.saveTeam("equipo_actividad", state.mission.activityId, state.selected.map { it.characterId }, evaluation.coverageScore, now)
             val fullCoverage = evaluation.missingSkills.isEmpty() && state.selected.isNotEmpty()
             if (fullCoverage) fullCoverageCount++
             val xp = if (fullCoverage) 16 else 6
             progressRepository.recordInteractionAndAwardXp(
-                kind = "TEAM_FORMED", referenceId = "equipo_actividad",
+                kind = "TEAM_FORMED", referenceId = state.mission.activityId,
                 xpAwarded = xp, wasSuccessful = fullCoverage, nowEpochMs = now
             )
             val newlyEarned = BadgeEngine.evaluateNewlyEarned(BadgeEngine.UserStats(teamsWithFullCoverage = fullCoverageCount), emptySet())

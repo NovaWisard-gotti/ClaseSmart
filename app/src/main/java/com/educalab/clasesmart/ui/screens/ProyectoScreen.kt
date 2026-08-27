@@ -9,8 +9,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -25,41 +27,54 @@ import com.educalab.clasesmart.ui.viewmodel.ProyectoViewModel
 @Composable
 fun ProyectoScreen(viewModel: ProyectoViewModel, onExit: () -> Unit) {
     val state by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(C.ParedCrema)
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Surface(shape = RoundedCornerShape(50), color = C.MarcoMadera, onClick = onExit) {
-                Text("← Aula", modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp), color = C.TizaBlanca, fontWeight = FontWeight.Bold)
-            }
-            Spacer(Modifier.width(8.dp))
-            state.project?.let { Text(it.title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = C.TextoOscuro) }
+    LaunchedEffect(state.completionMessage) {
+        val message = state.completionMessage
+        if (message != null) {
+            snackbarHostState.showSnackbar(message, duration = SnackbarDuration.Long)
+            viewModel.consumeCompletionMessage()
+            onExit()
         }
-        Spacer(Modifier.height(8.dp))
-        state.project?.let { Text(it.description, color = C.TextoSuave, style = MaterialTheme.typography.bodyMedium) }
-        Spacer(Modifier.height(16.dp))
+    }
 
-        // El "panel del proyecto" cambia visualmente segun visualState.
-        Surface(shape = RoundedCornerShape(18.dp), color = panelColor(state.visualState), modifier = Modifier.fillMaxWidth()) {
-            Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(panelEmoji(state.visualState), style = MaterialTheme.typography.headlineLarge)
-                Spacer(Modifier.width(12.dp))
-                Text(panelLabel(state.visualState), color = C.TextoOscuro, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+    Scaffold(containerColor = C.ParedCrema, snackbarHost = { SnackbarHost(snackbarHostState) }) { padding ->
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .background(C.ParedCrema)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(shape = RoundedCornerShape(50), color = C.MarcoMadera, onClick = onExit) {
+                    Text("← Aula", modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp), color = C.TizaBlanca, fontWeight = FontWeight.Bold)
+                }
+                Spacer(Modifier.width(8.dp))
+                state.project?.let { Text(it.title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = C.TextoOscuro) }
             }
-        }
-
-        Spacer(Modifier.height(20.dp))
-        Text("Pasos del proyecto", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = C.TextoOscuro)
-        Spacer(Modifier.height(8.dp))
-
-        state.project?.tasks?.sortedBy { it.orderIndex }?.forEach { task ->
-            TaskRow(task, done = task.taskId in state.completedTaskIds) { viewModel.completeTask(task.taskId) }
             Spacer(Modifier.height(8.dp))
+            state.project?.let { Text(it.description, color = C.TextoSuave, style = MaterialTheme.typography.bodyMedium) }
+            Spacer(Modifier.height(16.dp))
+
+            // El "panel del proyecto" cambia visualmente segun visualState.
+            Surface(shape = RoundedCornerShape(18.dp), color = panelColor(state.visualState), modifier = Modifier.fillMaxWidth()) {
+                Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(panelEmoji(state.visualState), style = MaterialTheme.typography.headlineLarge)
+                    Spacer(Modifier.width(12.dp))
+                    Text(panelLabel(state.visualState), color = C.TextoOscuro, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                }
+            }
+
+            Spacer(Modifier.height(20.dp))
+            Text("Pasos del proyecto", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = C.TextoOscuro)
+            Spacer(Modifier.height(8.dp))
+
+            state.project?.tasks?.sortedBy { it.orderIndex }?.forEach { task ->
+                TaskRow(task, done = task.taskId in state.completedTaskIds) { viewModel.completeTask(task.taskId) }
+                Spacer(Modifier.height(8.dp))
+            }
         }
     }
 }

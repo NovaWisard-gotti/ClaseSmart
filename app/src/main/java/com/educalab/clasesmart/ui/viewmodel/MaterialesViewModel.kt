@@ -28,7 +28,14 @@ data class MaterialesUiState(
     val isLoading: Boolean = true
 )
 
-private val EXPERIMENTO_MISSION = MaterialMission("mision_experimento", "Preparar el experimento de observacion", listOf("mat_lupa", "mat_recipiente", "mat_cuaderno_campo"))
+/** Varias misiones posibles para que la actividad no sea siempre la misma al reentrar al modulo. */
+val MATERIAL_MISSIONS = listOf(
+    MaterialMission("mision_experimento", "Preparar el experimento de observacion", listOf("mat_lupa", "mat_recipiente", "mat_cuaderno_campo")),
+    MaterialMission("mision_manualidades", "Preparar el rincon de manualidades", listOf("mat_tijeras", "mat_pegamento", "mat_papel_color", "mat_pinceles")),
+    MaterialMission("mision_lectura", "Preparar el circulo de lectura", listOf("mat_libro_cuentos", "mat_diccionario", "mat_marcapaginas")),
+    MaterialMission("mision_organizacion", "Preparar el estante de organizacion", listOf("mat_carpeta", "mat_etiquetas", "mat_caja_materiales")),
+    MaterialMission("mision_escritura", "Preparar el rincon de escritura", listOf("mat_lapiz", "mat_goma", "mat_regla", "mat_pizarra_mini"))
+)
 
 class MaterialesViewModel(
     private val materialRepository: MaterialRepository,
@@ -36,7 +43,7 @@ class MaterialesViewModel(
     private val badgeRepository: BadgeRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(MaterialesUiState(mission = EXPERIMENTO_MISSION))
+    private val _uiState = MutableStateFlow(MaterialesUiState(mission = MATERIAL_MISSIONS.random()))
     val uiState: StateFlow<MaterialesUiState> = _uiState.asStateFlow()
 
     private var readyMissionsCount = 0

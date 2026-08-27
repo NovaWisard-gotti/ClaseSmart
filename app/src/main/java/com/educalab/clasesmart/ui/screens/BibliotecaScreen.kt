@@ -15,77 +15,72 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.educalab.clasesmart.ui.scene.BibliotecaVisual
 import com.educalab.clasesmart.ui.theme.ClaseSmartColors as C
-
-private data class Resource(val id: String, val name: String, val correctCategory: String)
-private val CATEGORIES = listOf("Leer", "Investigar", "Crear", "Construir", "Comunicar", "Organizar")
-private val RESOURCES = listOf(
-    Resource("r1", "Libro de cuentos", "Leer"),
-    Resource("r2", "Lupa de observacion", "Investigar"),
-    Resource("r3", "Caja de pinturas", "Crear"),
-    Resource("r4", "Bloques de madera", "Construir"),
-    Resource("r5", "Mapa del aula", "Comunicar"),
-    Resource("r6", "Carpeta clasificadora", "Organizar")
-)
+import com.educalab.clasesmart.ui.viewmodel.BibliotecaViewModel
 
 /**
  * Modulo 7 - "Biblioteca del aula". Clasificar recursos tocando la
- * categoria correcta, con la estanteria ilustrada como fondo.
- * NOTA DE ALCANCE: modulo mas ligero, sin persistencia de progreso propia
- * en esta entrega v1.0.0; ver docs/BUILD_REPORT.md.
+ * categoria correcta, con la estanteria ilustrada como fondo. Cada
+ * clasificacion otorga XP real; al terminar la ronda se felicita al
+ * usuario y se vuelve al aula, igual que el resto de modulos.
  */
 @Composable
-fun BibliotecaScreen(onExit: () -> Unit) {
-    var currentIndex by remember { mutableStateOf(0) }
-    var feedback by remember { mutableStateOf<String?>(null) }
-    var correctCount by remember { mutableStateOf(0) }
-    val current = RESOURCES.getOrNull(currentIndex)
+fun BibliotecaScreen(viewModel: BibliotecaViewModel, onExit: () -> Unit) {
+    val state by viewModel.uiState.collectAsState()
+    val current = state.current
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(C.ParedCrema)
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp)
-    ) {
-        Row {
-            Surface(shape = RoundedCornerShape(50), color = C.MarcoMadera, onClick = onExit) {
-                Text("← Aula", modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp), color = C.TizaBlanca, fontWeight = FontWeight.Bold)
-            }
+    LaunchedEffect(state.completionMessage) {
+        val message = state.completionMessage
+        if (message != null) {
+            snackbarHostState.showSnackbar(message, duration = SnackbarDuration.Short)
+            viewModel.consumeCompletionMessage()
+            onExit()
         }
-        Spacer(Modifier.height(10.dp))
-        Text("Biblioteca del aula", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = C.TextoOscuro)
-        Spacer(Modifier.height(12.dp))
-        BibliotecaVisual(modifier = Modifier.fillMaxWidth().height(150.dp))
-        Spacer(Modifier.height(16.dp))
+    }
 
-        if (current == null) {
-            Text("Clasificaste todos los recursos: $correctCount de ${RESOURCES.size} a la primera.", color = C.TextoOscuro, fontWeight = FontWeight.Bold)
-        } else {
-            Text("¿Donde va \"${current.name}\"?", style = MaterialTheme.typography.titleMedium, color = C.TextoOscuro, fontWeight = FontWeight.SemiBold)
+    Scaffold(containerColor = C.ParedCrema, snackbarHost = { SnackbarHost(snackbarHostState) }) { padding ->
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .background(C.ParedCrema)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp)
+        ) {
+            Row {
+                Surface(shape = RoundedCornerShape(50), color = C.MarcoMadera, onClick = onExit) {
+                    Text("← Aula", modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp), color = C.TizaBlanca, fontWeight = FontWeight.Bold)
+                }
+            }
             Spacer(Modifier.height(10.dp))
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(CATEGORIES) { category ->
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = C.PapelBeige,
-                        onClick = {
-                            val isCorrect = category == current.correctCategory
-                            if (isCorrect) correctCount++
-                            feedback = if (isCorrect) "¡Bien clasificado! \"${current.name}\" ayuda a ${category.lowercase()}."
-                                       else "Prueba otra categoria: \"${current.name}\" encaja mejor en ${current.correctCategory}."
-                            if (isCorrect) currentIndex++
+            Text("Biblioteca del aula", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = C.TextoOscuro)
+            Spacer(Modifier.height(12.dp))
+            BibliotecaVisual(modifier = Modifier.fillMaxWidth().height(150.dp))
+            Spacer(Modifier.height(16.dp))
+
+            if (current == null) {
+                Text("Clasificaste todos los recursos: ${state.correctCount} de ${state.resources.size} a la primera.", color = C.TextoOscuro, fontWeight = FontWeight.Bold)
+            } else {
+                Text("¿Donde va \"${current.name}\"?", style = MaterialTheme.typography.titleMedium, color = C.TextoOscuro, fontWeight = FontWeight.SemiBold)
+                Spacer(Modifier.height(10.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(state.categories) { category ->
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = C.PapelBeige,
+                            onClick = { viewModel.classify(category) }
+                        ) {
+                            Text(category, modifier = Modifier.padding(12.dp), color = C.TextoOscuro)
                         }
-                    ) {
-                        Text(category, modifier = Modifier.padding(12.dp), color = C.TextoOscuro)
                     }
                 }
             }
-        }
 
-        feedback?.let {
-            Spacer(Modifier.height(14.dp))
-            Surface(shape = RoundedCornerShape(12.dp), color = C.TizaAmarilla, modifier = Modifier.fillMaxWidth()) {
-                Text(it, modifier = Modifier.padding(12.dp), color = C.TextoOscuro)
+            state.feedback?.let {
+                Spacer(Modifier.height(14.dp))
+                Surface(shape = RoundedCornerShape(12.dp), color = C.TizaAmarilla, modifier = Modifier.fillMaxWidth()) {
+                    Text(it, modifier = Modifier.padding(12.dp), color = C.TextoOscuro)
+                }
             }
         }
     }

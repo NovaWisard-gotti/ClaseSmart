@@ -1,12 +1,16 @@
 package com.educalab.clasesmart.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
-private val LightScheme = lightColorScheme(
+/**
+ * ClaseSmart usa siempre la misma paleta tematica de aula, sin importar si
+ * el sistema esta en modo oscuro o claro (Regla: la app no debe cambiar de
+ * colores segun el tema del dispositivo, para mantener consistencia visual
+ * infantil/educativa).
+ */
+private val AulaScheme = lightColorScheme(
     primary = ClaseSmartColors.PizarraVerde,
     onPrimary = ClaseSmartColors.TizaBlanca,
     secondary = ClaseSmartColors.AcentoNaranja,
@@ -18,20 +22,10 @@ private val LightScheme = lightColorScheme(
     tertiary = ClaseSmartColors.AcentoAzulCielo
 )
 
-private val DarkScheme = darkColorScheme(
-    primary = ClaseSmartColors.AcentoAzulCielo,
-    onPrimary = ClaseSmartColors.TextoOscuro,
-    secondary = ClaseSmartColors.TizaAmarilla,
-    background = ClaseSmartColors.PizarraVerdeOscuro,
-    onBackground = ClaseSmartColors.ParedCrema,
-    surface = ClaseSmartColors.MarcoMaderaOscuro,
-    onSurface = ClaseSmartColors.ParedCrema
-)
-
 @Composable
-fun ClaseSmartTheme(useDarkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
+fun ClaseSmartTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = if (useDarkTheme) DarkScheme else LightScheme,
+        colorScheme = AulaScheme,
         typography = ClaseSmartTypography,
         content = content
     )

@@ -15,7 +15,9 @@ object BadgeEngine {
         val convivenciaSituationsResolved: Int = 0,
         val projectsCompleted: Int = 0,
         val decorationsUnlocked: Int = 0,
-        val ideasBoardsCreated: Int = 0
+        val ideasBoardsCreated: Int = 0,
+        val libraryPerfectRounds: Int = 0,
+        val aulaCareCompleted: Int = 0
     )
 
     data class BadgeRule(val badgeId: String, val condition: (UserStats) -> Boolean)
@@ -32,7 +34,9 @@ object BadgeEngine {
         BadgeRule("planificador_creativo") { it.schedulesWithoutIssues >= 8 },
         BadgeRule("experto_en_colaboracion") { it.teamsWithFullCoverage >= 6 },
         BadgeRule("cuidador_del_espacio") { it.decorationsUnlocked >= 5 },
-        BadgeRule("lider_de_proyecto") { it.projectsCompleted >= 1 }
+        BadgeRule("lider_de_proyecto") { it.projectsCompleted >= 1 },
+        BadgeRule("bibliotecario_experto") { it.libraryPerfectRounds >= 3 },
+        BadgeRule("guardian_del_aula") { it.aulaCareCompleted >= 3 }
     )
 
     /** Devuelve los ids de insignia que se cumplen ahora mismo y todavia no se tenian. */

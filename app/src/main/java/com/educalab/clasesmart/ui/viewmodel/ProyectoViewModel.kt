@@ -18,6 +18,7 @@ data class ProyectoUiState(
     val project: SchoolProject? = null,
     val completedTaskIds: Set<String> = emptySet(),
     val visualState: ProjectVisualState = ProjectVisualState.INICIAL,
+    val completionMessage: String? = null,
     val isLoading: Boolean = true
 )
 
@@ -48,17 +49,23 @@ class ProyectoViewModel(
             _uiState.value = state.copy(completedTaskIds = progress.completedTaskIds, visualState = progress.visualState)
 
             if (progress.visualState == ProjectVisualState.COMPLETADO) {
+                val xp = 40
                 progressRepository.recordInteractionAndAwardXp(
-                    kind = "PROJECT_COMPLETED", referenceId = project.projectId, xpAwarded = 40, wasSuccessful = true, nowEpochMs = now
+                    kind = "PROJECT_COMPLETED", referenceId = project.projectId, xpAwarded = xp, wasSuccessful = true, nowEpochMs = now
                 )
                 val newlyEarned = BadgeEngine.evaluateNewlyEarned(BadgeEngine.UserStats(projectsCompleted = 1), emptySet())
                 if (newlyEarned.isNotEmpty()) badgeRepository.awardBadges(newlyEarned, now)
+                _uiState.value = _uiState.value.copy(completionMessage = "¡Proyecto completado! +$xp XP")
             } else {
                 progressRepository.recordInteractionAndAwardXp(
                     kind = "PROJECT_TASK", referenceId = taskId, xpAwarded = 5, wasSuccessful = true, nowEpochMs = now
                 )
             }
         }
+    }
+
+    fun consumeCompletionMessage() {
+        _uiState.value = _uiState.value.copy(completionMessage = null)
     }
 
     class Factory(

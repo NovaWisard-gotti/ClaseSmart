@@ -45,9 +45,10 @@ import kotlinx.coroutines.launch
         ProjectTaskEntity::class,
         ProjectProgressEntity::class,
         BadgeEntity::class,
-        UserBadgeEntity::class
+        UserBadgeEntity::class,
+        IdeaNoteEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -79,6 +80,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun projectProgressDao(): ProjectProgressDao
     abstract fun badgeDao(): BadgeDao
     abstract fun userBadgeDao(): UserBadgeDao
+    abstract fun ideaNoteDao(): IdeaNoteDao
 
     companion object {
         @Volatile private var instance: AppDatabase? = null

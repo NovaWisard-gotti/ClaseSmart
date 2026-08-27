@@ -69,7 +69,10 @@ fun EquiposScreen(viewModel: EquiposViewModel, onExit: () -> Unit) {
                 Text("Equipos en accion", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = C.TextoOscuro)
             }
             Spacer(Modifier.height(8.dp))
-            Text("Investigacion en grupos necesita: investigar, observar y explicar.", color = C.TextoSuave, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                "${state.mission.title} necesita: ${state.mission.requiredSkills.joinToString(", ") { it.name.lowercase() }}.",
+                color = C.TextoSuave, style = MaterialTheme.typography.bodyMedium
+            )
             Spacer(Modifier.height(16.dp))
 
             // Pupitres = equipo elegido

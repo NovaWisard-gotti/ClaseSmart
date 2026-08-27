@@ -71,6 +71,8 @@ fun ClaseSmartNavGraph(container: AppContainer) {
                         "MOCHILA" -> ClaseSmartRoutes.PIZARRA_IDEAS
                         "PUERTA" -> ClaseSmartRoutes.PROYECTOS
                         "CARTEL" -> ClaseSmartRoutes.SITUACIONES
+                        "PLANTA" -> ClaseSmartRoutes.CUIDADO_AULA
+                        "PAPELERA" -> ClaseSmartRoutes.CUIDADO_AULA
                         else -> null
                     }
                     route?.let { navController.navigate(it) }
@@ -129,7 +131,10 @@ fun ClaseSmartNavGraph(container: AppContainer) {
             enterTransition = ClassroomTransitions.enterZoomIn,
             popExitTransition = ClassroomTransitions.popExitZoomBack
         ) {
-            PizarraIdeasScreen { navController.popBackStack() }
+            val vm: PizarraIdeasViewModel = viewModel(
+                factory = PizarraIdeasViewModel.Factory(container.ideaBoardRepository, container.progressRepository, container.badgeRepository)
+            )
+            PizarraIdeasScreen(vm) { navController.popBackStack() }
         }
 
         composable(
@@ -137,7 +142,17 @@ fun ClaseSmartNavGraph(container: AppContainer) {
             enterTransition = ClassroomTransitions.enterZoomIn,
             popExitTransition = ClassroomTransitions.popExitZoomBack
         ) {
-            BibliotecaScreen { navController.popBackStack() }
+            val vm: BibliotecaViewModel = viewModel(factory = BibliotecaViewModel.Factory(container.progressRepository, container.badgeRepository))
+            BibliotecaScreen(vm) { navController.popBackStack() }
+        }
+
+        composable(
+            ClaseSmartRoutes.CUIDADO_AULA,
+            enterTransition = ClassroomTransitions.enterZoomIn,
+            popExitTransition = ClassroomTransitions.popExitZoomBack
+        ) {
+            val vm: CuidadoAulaViewModel = viewModel(factory = CuidadoAulaViewModel.Factory(container.progressRepository, container.badgeRepository))
+            CuidadoAulaScreen(vm) { navController.popBackStack() }
         }
 
         composable(

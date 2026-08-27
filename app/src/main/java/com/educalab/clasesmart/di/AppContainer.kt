@@ -21,6 +21,7 @@ class AppContainer(context: Context) {
     val teamRepository = TeamRepository(db.teamDao(), db.teamMemberDao())
     val projectRepository = ProjectRepository(db.projectDao(), db.projectTaskDao(), db.projectProgressDao())
     val badgeRepository = BadgeRepository(db.badgeDao(), db.userBadgeDao())
+    val ideaBoardRepository = IdeaBoardRepository(db.ideaNoteDao())
 
     val userProfileDao = db.userProfileDao()
     val timeBlockDao = db.timeBlockDao()

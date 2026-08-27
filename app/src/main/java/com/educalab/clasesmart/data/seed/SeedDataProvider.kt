@@ -49,5 +49,7 @@ object SeedDataProvider {
 
         db.projectDao().insertAll(SeedProjects.projects)
         db.projectTaskDao().insertAll(SeedProjects.tasks)
+
+        db.ideaNoteDao().insertAll(SeedIdeaNotes.notes)
     }
 }

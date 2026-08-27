@@ -14,6 +14,7 @@ object ClaseSmartRoutes {
     const val PROYECTO_DETALLE = "proyecto/{projectId}"
     const val PERFIL = "perfil"
     const val INSIGNIAS = "insignias"
+    const val CUIDADO_AULA = "cuidado_aula"
 
     fun proyecto(projectId: String) = "proyecto/$projectId"
 }

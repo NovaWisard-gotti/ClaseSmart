@@ -12,14 +12,26 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+/** Banco de tareas posibles; cada visita al modulo sortea un subconjunto para que no sea siempre el mismo reto. */
+private val TASK_POOL = listOf(
+    PlannableActivity("t1", "Terminar el resumen", Subject.LECTURA, 10),
+    PlannableActivity("t2", "Revisar el experimento", Subject.CIENCIAS, 15),
+    PlannableActivity("t3", "Ensayar la exposicion", Subject.EXPOSICION, 12),
+    PlannableActivity("t4", "Ordenar el estante", Subject.LIMPIEZA, 8),
+    PlannableActivity("t5", "Terminar el dibujo del mural", Subject.ARTE, 14),
+    PlannableActivity("t6", "Resolver los problemas de matematicas", Subject.MATEMATICAS, 18),
+    PlannableActivity("t7", "Repartir el material del equipo", Subject.TRABAJO_GRUPAL, 6),
+    PlannableActivity("t8", "Anotar las conclusiones del experimento", Subject.CIENCIAS, 9),
+    PlannableActivity("t9", "Practicar la lectura en voz alta", Subject.LECTURA, 7),
+    PlannableActivity("t10", "Guardar los materiales compartidos", Subject.LIMPIEZA, 5)
+)
+
+private fun randomBudget() = listOf(25, 30, 35).random()
+private fun randomTasks() = TASK_POOL.shuffled().take(4)
+
 data class RelojTiempoUiState(
     val budgetMinutes: Int = 30,
-    val availableTasks: List<PlannableActivity> = listOf(
-        PlannableActivity("t1", "Terminar el resumen", Subject.LECTURA, 10),
-        PlannableActivity("t2", "Revisar el experimento", Subject.CIENCIAS, 15),
-        PlannableActivity("t3", "Ensayar la exposicion", Subject.EXPOSICION, 12),
-        PlannableActivity("t4", "Ordenar el estante", Subject.LIMPIEZA, 8)
-    ),
+    val availableTasks: List<PlannableActivity> = TASK_POOL.take(4),
     val chosenTasks: List<PlannableActivity> = emptyList(),
     val result: TimeManagementEngine.TimeChallengeResult? = null,
     val confirmationMessage: String? = null,
@@ -28,7 +40,7 @@ data class RelojTiempoUiState(
 
 class RelojTiempoViewModel(private val progressRepository: ProgressRepository) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(RelojTiempoUiState())
+    private val _uiState = MutableStateFlow(RelojTiempoUiState(budgetMinutes = randomBudget(), availableTasks = randomTasks()))
     val uiState: StateFlow<RelojTiempoUiState> = _uiState.asStateFlow()
 
     fun toggle(task: PlannableActivity) {

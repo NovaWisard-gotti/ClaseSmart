@@ -2,7 +2,7 @@ package com.educalab.clasesmart.data.seed
 
 import com.educalab.clasesmart.data.local.entity.BadgeEntity
 
-/** 12 insignias (Regla: minimo 12), alineadas 1:1 con BadgeEngine.rules. */
+/** 14 insignias, alineadas 1:1 con BadgeEngine.rules (minimo 12 requerido). */
 object SeedBadges {
     val badges = listOf(
         BadgeEntity("gran_organizador", "Gran Organizador", "Organizaste el horario del aula sin dejar nada suelto.", "icon_badge_organizador", "ORGANIZACION"),
@@ -16,6 +16,8 @@ object SeedBadges {
         BadgeEntity("planificador_creativo", "Planificador Creativo", "Tus horarios funcionan una y otra vez.", "icon_badge_planificador", "ORGANIZACION"),
         BadgeEntity("experto_en_colaboracion", "Experto en Colaboracion", "Formaste muchos equipos que se complementan.", "icon_badge_colaboracion", "EQUIPO"),
         BadgeEntity("cuidador_del_espacio", "Cuidador del Espacio", "Cuidaste y decoraste el aula con esfuerzo real.", "icon_badge_cuidador", "ORGANIZACION"),
-        BadgeEntity("lider_de_proyecto", "Lider de Proyecto", "Llevaste un gran proyecto del aula hasta el final.", "icon_badge_lider", "PROYECTO")
+        BadgeEntity("lider_de_proyecto", "Lider de Proyecto", "Llevaste un gran proyecto del aula hasta el final.", "icon_badge_lider", "PROYECTO"),
+        BadgeEntity("bibliotecario_experto", "Bibliotecario Experto", "Clasificaste todos los recursos de la biblioteca sin errores.", "icon_badge_biblioteca", "ORGANIZACION"),
+        BadgeEntity("guardian_del_aula", "Guardian del Aula", "Cuidaste las plantas y mantuviste el aula ordenada.", "icon_badge_guardian", "ORGANIZACION")
     )
 }
